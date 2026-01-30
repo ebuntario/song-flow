@@ -13,16 +13,32 @@ migration to cloud services later.
 
 ---
 
-## Key Benefits
+## Architecture
 
-| Aspect           | Original Plan           | Simplified MVP      |
-| ---------------- | ----------------------- | ------------------- |
-| **Backend**      | Separate NestJS         | Next.js API routes  |
-| **Database**     | Neon PostgreSQL         | SQLite (local file) |
-| **Cache**        | Redis                   | In-memory (Map)     |
-| **Config**       | Multiple cloud services | Just OAuth keys     |
-| **Local dev**    | Docker + cloud          | Just `pnpm dev`     |
-| **Time to demo** | 5 weeks                 | 2 weeks             |
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Frontend (Next.js)                      │
+│  ┌─────────────┐  ┌──────────────┐  ┌───────────────────┐   │
+│  │  Dashboard  │  │  Login Page  │  │  Auth (NextAuth)  │   │
+│  └──────┬──────┘  └──────────────┘  └───────────────────┘   │
+│         │ WebSocket                                          │
+└─────────┼───────────────────────────────────────────────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Backend (Bun + Elysia)                    │
+│  ┌─────────────┐  ┌──────────────┐  ┌───────────────────┐   │
+│  │  TikTok WS  │  │  Spotify API │  │  Session Manager  │   │
+│  │  Listener   │  │  Integration │  │  + Rate Limiter   │   │
+│  └──────┬──────┘  └──────────────┘  └───────────────────┘   │
+│         │                                                    │
+│         ▼                                                    │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │               PostgreSQL (Neon)                      │    │
+│  │   users, sessions, accounts, live_sessions, queue    │    │
+│  └─────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -30,23 +46,24 @@ migration to cloud services later.
 
 ### Core
 
-| Component | Technology                  | Migration Path           |
-| --------- | --------------------------- | ------------------------ |
-| Framework | Next.js 14 (App Router)     | Same                     |
-| ORM       | **Drizzle ORM**             | Same schema → PostgreSQL |
-| Database  | **SQLite** (better-sqlite3) | → Neon PostgreSQL        |
-| Auth      | **NextAuth.js v5**          | Same                     |
-| WebSocket | Socket.io                   | Same                     |
-| State     | In-memory (Map)             | → Redis                  |
+| Component | Technology              | Status |
+| --------- | ----------------------- | ------ |
+| Frontend  | Next.js 14 (App Router) | ✅     |
+| Backend   | **Bun + Elysia**        | ✅     |
+| Database  | PostgreSQL (Neon)       | ✅     |
+| ORM       | Drizzle ORM             | ✅     |
+| Auth      | NextAuth.js v5          | ✅     |
+| WebSocket | Elysia WS + pub/sub     | ✅     |
+| TikTok    | tiktok-live-connector   | ✅     |
 
 ### UI
 
-| Component  | Technology   |
-| ---------- | ------------ |
-| Styling    | Tailwind CSS |
-| Components | shadcn/ui    |
-| Icons      | Lucide React |
-| Theme      | Dark mode    |
+| Component  | Technology   | Status |
+| ---------- | ------------ | ------ |
+| Styling    | Tailwind CSS | ✅     |
+| Components | shadcn/ui    | ✅     |
+| Icons      | Lucide React | ✅     |
+| Theme      | Dark mode    | ✅     |
 
 ---
 
@@ -54,111 +71,129 @@ migration to cloud services later.
 
 ```
 song-flow/
-├── src/                          # Source code
-│   ├── app/                      # Next.js App Router
-│   │   ├── (auth)/
-│   │   │   └── login/page.tsx
-│   │   ├── dashboard/
-│   │   │   └── page.tsx
-│   │   ├── api/
-│   │   │   └── auth/[...nextauth]/route.ts
-│   │   ├── layout.tsx
-│   │   └── page.tsx
-│   ├── components/               # shadcn/ui
-│   │   └── ui/
+├── src/                              # Frontend (Next.js)
+│   ├── app/
+│   │   ├── dashboard/page.tsx        # Main dashboard
+│   │   ├── login/page.tsx            # Login page
+│   │   └── api/
+│   │       ├── auth/[...nextauth]/   # NextAuth routes
+│   │       └── test-auth/login/      # E2E test auth
+│   ├── components/
+│   │   ├── live-session-panel.tsx    # WebSocket-powered session UI
+│   │   └── ui/                       # shadcn components
+│   ├── hooks/
+│   │   └── use-backend-ws.ts         # Backend WebSocket hook
 │   ├── lib/
+│   │   ├── db/                       # SQLite (local dev fallback)
+│   │   ├── tiktok/parser.ts          # Command parser
+│   │   └── spotify/client.ts         # Spotify token helper
+│   └── auth.ts                       # NextAuth config
+│
+├── backend/                          # Backend (Bun + Elysia)
+│   ├── src/
+│   │   ├── index.ts                  # Main app + routes + WS
 │   │   ├── db/
-│   │   │   ├── index.ts          # Drizzle client
-│   │   │   └── schema.ts         # Drizzle schema
-│   │   ├── tiktok/
-│   │   │   ├── listener.ts
-│   │   │   └── parser.ts
-│   │   └── spotify/
-│   │       └── client.ts
-│   ├── auth.ts                   # Auth.js config
-│   └── types/
-│       └── next-auth.d.ts
-├── docs/                         # Documentation
-├── drizzle.config.ts
-├── .env.example
+│   │   │   ├── schema.ts             # PostgreSQL schema
+│   │   │   ├── client.ts             # Drizzle client
+│   │   │   └── queries.ts            # Reusable queries
+│   │   ├── services/
+│   │   │   ├── auth.ts               # Session validation
+│   │   │   ├── tiktok.ts             # TikTok listener manager
+│   │   │   └── spotify.ts            # Spotify API wrapper
+│   │   └── lib/
+│   │       ├── parser.ts             # Command parser
+│   │       └── rate-limit.ts         # In-memory rate limiter
+│   ├── Dockerfile                    # Railway deployment
+│   └── package.json
+│
+├── e2e/                              # Playwright E2E tests
+├── docs/                             # Documentation
 └── package.json
 ```
 
 ---
 
-## Minimal Configuration
+## Configuration
 
-### .env.local
+### Frontend (.env.local)
 
 ```bash
-# Auth.js
-AUTH_SECRET=
-
-# TikTok OAuth
-AUTH_TIKTOK_ID=
-AUTH_TIKTOK_SECRET=
-
-# Spotify OAuth
-AUTH_SPOTIFY_ID=
-AUTH_SPOTIFY_SECRET=
+AUTH_SECRET=your_secret
+AUTH_TIKTOK_ID=your_tiktok_client_id
+AUTH_TIKTOK_SECRET=your_tiktok_secret
+AUTH_SPOTIFY_ID=your_spotify_client_id
+AUTH_SPOTIFY_SECRET=your_spotify_secret
+NEXT_PUBLIC_BACKEND_URL=http://localhost:4000
 ```
 
-### Local Development
+### Backend (.env)
 
 ```bash
-pnpm install
-pnpm dev
+DATABASE_URL=postgresql://...
+SPOTIFY_CLIENT_ID=your_spotify_client_id
+SPOTIFY_CLIENT_SECRET=your_spotify_secret
+FRONTEND_URL=http://localhost:3000
+PORT=4000
 ```
 
 ---
 
 ## Phase Breakdown
 
-### Phase 1: Local MVP (2 weeks)
-
-**Week 1: Foundation + Auth (Completed ✅)**
+### Phase 1: Foundation (Completed ✅)
 
 - [x] Initialize Next.js 14
-- [x] Setup Drizzle + SQLite
-- [x] Configure NextAuth.js (v5)
-- [x] TikTok OAuth provider
-- [x] Spotify OAuth + token storage
+- [x] Setup Drizzle + SQLite (frontend)
+- [x] Configure NextAuth.js v5
+- [x] TikTok + Spotify OAuth providers
 - [x] shadcn/ui + dark theme
-- [x] Basic layout (Login, Dashboard)
+- [x] Login and Dashboard pages
 
-**Week 2: Core Features (In Progress 🟡)**
+### Phase 2: Backend Service (Completed ✅)
 
-- [ ] Session management (Start/Stop)
-- [ ] TikTok Live chat listener (websocket)
-- [ ] Command parser (!play, !revoke, !skip)
-- [ ] Spotify search + queue connection
-- [ ] Real-time queue updates
+- [x] Bun + Elysia backend setup
+- [x] PostgreSQL schema + Drizzle
+- [x] Auth service (session validation)
+- [x] TikTok service (persistent WebSocket connections)
+- [x] Spotify service (token refresh, search)
+- [x] Session routes (start/stop)
+- [x] Queue routes (get/remove)
+- [x] WebSocket gateway for real-time updates
+- [x] Rate limiting
+- [x] Graceful shutdown + session recovery
 
-### Phase 2: Dashboard + Overlay (2 weeks)
+### Phase 3: Frontend Integration (Completed ✅)
 
-**Week 3: Dashboard**
+- [x] WebSocket hook (`useBackendWS`)
+- [x] LiveSessionPanel component
+- [x] Real-time queue updates
+- [x] Connection status indicator
 
-- [ ] Now Playing widget
-- [ ] Queue list UI
-- [ ] Request settings
-- [ ] WebSocket integration
+### Phase 4: Testing (Completed ✅)
 
-**Week 4: Overlay + Polish**
+- [x] Unit tests (Vitest): 31/31 passing
+- [x] E2E tests (Playwright): 22/22 passing
+- [x] Test auth endpoint for E2E
 
-- [ ] Overlay page (OBS)
-- [ ] Real-time sync
-- [ ] Settings page
-- [ ] Error handling
-- [ ] Mobile responsive
+### Phase 5: Deploy (Next 🟡)
 
-### Phase 3: Deploy (1 week)
-
-**Week 5: Production**
-
-- [ ] Migrate SQLite → Neon
-- [ ] Deploy to Vercel
+- [ ] Deploy backend to Railway
+- [ ] Configure production environment variables
+- [ ] Deploy frontend to Vercel
 - [ ] Domain setup
-- [ ] Beta testers
+- [ ] Beta testing
+
+---
+
+## Tests
+
+```bash
+# Unit tests
+npm run test
+
+# E2E tests
+TEST_MODE=true npm run test:e2e
+```
 
 ---
 
@@ -166,4 +201,10 @@ pnpm dev
 
 - **Jan 30 2026**: Completed Week 1 foundation. Decided to persist queue state
   in SQLite instead of in-memory Map for better resilience during development
-  restarts. All UI components installed. Login and Dashboard pages created.
+  restarts.
+
+- **Jan 31 2026**: Major architecture pivot to Bun + Elysia backend after design
+  review. Implemented complete backend service with TikTok WebSocket listener,
+  Spotify integration, session management, and real-time updates. Frontend now
+  connects via WebSocket for live queue updates. All tests passing (31 unit + 22
+  E2E).
