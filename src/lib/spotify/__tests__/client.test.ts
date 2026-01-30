@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getSpotifyToken, searchTracks, addToQueue, skipTrack, getCurrentlyPlaying } from "../client";
+import { searchTracks, addToQueue, skipTrack, getCurrentlyPlaying } from "../client";
 
 // Mock the database module
 vi.mock("@/lib/db", () => ({

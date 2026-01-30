@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseCommand, type Command } from "../parser";
+import { parseCommand } from "../parser";
 
 describe("parseCommand", () => {
   describe("!play command", () => {

@@ -110,7 +110,7 @@ export async function DELETE() {
 
   try {
     // Delete all test user sessions
-    const result = await db.delete(sessions).where(
+    await db.delete(sessions).where(
       eq(sessions.userId, "test-user-test_user")
     );
 
