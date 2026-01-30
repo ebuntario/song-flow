@@ -4,33 +4,30 @@
 **Developer:** Solo\
 **Start Date:** January 30, 2026\
 **Target Launch:** Week 10 (Early April 2026)\
-**Status:** 🟢 Planning Complete
+**Status:** 🟡 In Progress
 
 ---
 
-## Confirmed Stack
+## Confirmed Stack (Simplified MVP)
 
-| Component | Technology                         |
-| --------- | ---------------------------------- |
-| Frontend  | Next.js 14 + Tailwind + shadcn/ui  |
-| Backend   | NestJS (Railway)                   |
-| Database  | **Neon** (Serverless PostgreSQL)   |
-| Cache     | Redis (Railway)                    |
-| Auth      | NextAuth.js + TikTok/Spotify OAuth |
-| Payments  | Midtrans (post-MVP)                |
-| Theme     | Dark mode (modern)                 |
+| Component | Technology                          |
+| --------- | ----------------------------------- |
+| Frontend  | Next.js 14 + Tailwind + shadcn/ui   |
+| Backend   | Next.js API Routes (Serverless)     |
+| Database  | **SQLite** (drizzle-orm)            |
+| Auth      | NextAuth.js + TikTok/Spotify OAuth  |
+| Live Chat | tiktok-live-connector (Node script) |
+| Theme     | Dark mode (modern)                  |
 
 ---
 
 ## Quick Status
 
-| Phase                             | Status         | Progress | Weeks |
-| --------------------------------- | -------------- | -------- | ----- |
-| **Phase 1:** Foundation           | 🔴 Not Started | 0%       | 1–2   |
-| **Phase 2:** Core Features        | 🔴 Not Started | 0%       | 3–5   |
-| **Phase 3:** Dashboard & Overlay  | 🔴 Not Started | 0%       | 6–7   |
-| **Phase 4:** Analytics & Settings | 🔴 Not Started | 0%       | 8–9   |
-| **Phase 5:** Polish & Launch      | 🔴 Not Started | 0%       | 10    |
+| Phase                            | Status         | Progress | Weeks |
+| -------------------------------- | -------------- | -------- | ----- |
+| **Phase 1:** Foundation          | 🟢 Complete    | 100%     | 1–2   |
+| **Phase 2:** Core Features       | 🟡 In Progress | 10%      | 3–5   |
+| **Phase 3:** Dashboard & Overlay | 🔴 Not Started | 0%       | 6–7   |
 
 **Legend:** 🔴 Not Started | 🟡 In Progress | 🟢 Complete
 
@@ -40,50 +37,35 @@
 
 ### 1.1 Project Initialization
 
-- [ ] Initialize Next.js 14 with App Router
-- [ ] Setup NestJS backend
-- [ ] Configure ESLint, Prettier
-- [ ] Setup environment variables
-- [ ] Docker Compose for local Redis
+- [x] Initialize Next.js 14 with App Router
+- [x] Configure ESLint, Prettier
+- [x] Setup environment variables
 
-### 1.2 Neon Database Setup
+### 1.2 Database & Auth
 
-- [ ] Create Neon project
-- [ ] Setup database schema (Drizzle ORM)
-- [ ] Create dev branch for development
-- [ ] Configure connection pooling
-- [ ] Setup migrations
+- [x] Setup database schema (Drizzle + SQLite)
+- [x] NextAuth.js setup
+- [x] TikTok OAuth provider
+- [x] Spotify OAuth flow
 
-### 1.3 Authentication
+### 1.3 UI Foundation
 
-- [ ] NextAuth.js setup
-- [ ] TikTok OAuth provider
-- [ ] Spotify OAuth flow
-- [ ] Auth middleware
-- [ ] Protected routes
+- [x] Install shadcn/ui
+- [x] Configure dark theme
+- [x] Create layouts (Login, Dashboard, Root)
 
-### 1.4 UI Foundation
+### 1.4 Backend Foundation
 
-- [ ] Install shadcn/ui
-- [ ] Configure dark theme
-- [ ] Setup color palette
-- [ ] Configure components
-- [ ] Create layouts
-
-### 1.5 Railway Setup
-
-- [ ] Create Railway project
-- [ ] Deploy NestJS backend
-- [ ] Setup Redis
-- [ ] Configure secrets
-- [ ] Setup deployment pipeline
+- [x] TikTok Live listener script
+- [x] Command parser
+- [x] Spotify API client
 
 **Deliverables:**
 
-- [ ] Auth flow working
-- [ ] Database deployed on Neon
-- [ ] UI components ready
-- [ ] Dev environment functional
+- [x] Auth flow ready
+- [x] Database schema pushed
+- [x] UI components ready
+- [x] Dev environment functional
 
 ---
 
@@ -256,35 +238,16 @@
 
 ---
 
-## Key Milestones
-
-| Milestone          | Target | Status |
-| ------------------ | ------ | ------ |
-| Dev kickoff        | Feb 1  | 🔴     |
-| Auth complete      | Feb 14 | 🔴     |
-| Core features demo | Mar 7  | 🔴     |
-| Dashboard MVP      | Mar 21 | 🔴     |
-| Beta launch        | Apr 4  | 🔴     |
-
----
-
-## Blockers & Issues
-
-| Issue    | Priority | Status | Notes |
-| -------- | -------- | ------ | ----- |
-| None yet | -        | -      | -     |
-
----
-
 ## Weekly Updates
 
-### Week 0 (Jan 30, 2026)
+### Week 1 (Jan 30, 2026)
 
-- ✅ Created development plan
-- ✅ Confirmed tech stack (Neon, Railway, shadcn/ui)
-- ✅ Set up progress tracking
-- ✅ Created simplified MVP option
-- 🎯 Ready to start Phase 1
+- ✅ **Foundation:** Initialized Next.js 14 project with TypeScript & Tailwind
+- ✅ **Database:** Set up Drizzle ORM with SQLite and pushed schema
+- ✅ **Auth:** Configured Auth.js with TikTok and Spotify providers
+- ✅ **UI:** Installed shadcn/ui, implemented Login and Dashboard pages
+- ✅ **Backend:** Created TikTok Live listener and command parser
+- 🎯 **Next:** Connect Dashboard logic to backend
 
 ---
 
