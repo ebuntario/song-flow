@@ -1,0 +1,389 @@
+[
+  {
+    "id": "TC001",
+    "title": "TikTok OAuth login success",
+    "description": "Verify that a user can successfully log in through TikTok OAuth and that the session persists correctly.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the SongFlow login page."
+      },
+      {
+        "type": "action",
+        "description": "Click on the 'Login with TikTok' button."
+      },
+      {
+        "type": "action",
+        "description": "Complete the TikTok OAuth login flow with valid credentials."
+      },
+      {
+        "type": "assertion",
+        "description": "User is redirected to dashboard and session is persisted (able to access protected routes)."
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Spotify OAuth integration and token refresh",
+    "description": "Verify the user can successfully connect their Spotify account via OAuth and that the access token refresh mechanism works properly.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "From the dashboard, initiate Spotify OAuth connection."
+      },
+      {
+        "type": "action",
+        "description": "Complete Spotify OAuth flow with valid Spotify credentials."
+      },
+      {
+        "type": "assertion",
+        "description": "Spotify account is linked with user session, and playback control functionality is enabled."
+      },
+      {
+        "type": "action",
+        "description": "Simulate access token expiration."
+      },
+      {
+        "type": "assertion",
+        "description": "Spotify token refresh occurs automatically, preserving playback control without user interruption."
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Connect to TikTok Live chat via WebSocket",
+    "description": "Confirm that the backend establishes and maintains a WebSocket connection to TikTok Live chat and listens for incoming chat messages.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Start a live TikTok streaming session linked to the logged-in user."
+      },
+      {
+        "type": "action",
+        "description": "Initiate backend connection to TikTok Live chat stream via WebSocket."
+      },
+      {
+        "type": "assertion",
+        "description": "WebSocket connection is successfully established and remains open without unexpected disconnections."
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Parse valid song request commands from TikTok chat",
+    "description": "Test that the TikTok chat parser correctly identifies and processes valid song request commands (!play, !revoke, !skip).",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Send chat message '!play Shape of You' in TikTok Live chat."
+      },
+      {
+        "type": "assertion",
+        "description": "Parser detects the !play command and extracts 'Shape of You' as the requested song."
+      },
+      {
+        "type": "action",
+        "description": "Send chat message '!revoke 3' in TikTok Live chat."
+      },
+      {
+        "type": "assertion",
+        "description": "Parser detects the !revoke command and interprets '3' as the request to remove the third queued song."
+      },
+      {
+        "type": "action",
+        "description": "Send chat message '!skip' in TikTok Live chat."
+      },
+      {
+        "type": "assertion",
+        "description": "Parser detects the !skip command and triggers skip functionality."
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Search Spotify API and enqueue requested songs",
+    "description": "Ensure that valid song requests trigger a search on the Spotify API and the resulting track is queued to the streamer's playback device.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Submit a valid song request (e.g. '!play Shape of You') via TikTok chat."
+      },
+      {
+        "type": "assertion",
+        "description": "System searches Spotify API for 'Shape of You' and queues top result on the Spotify playback device."
+      },
+      {
+        "type": "assertion",
+        "description": "Queue is updated both on dashboard and internal database."
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Handle invalid or unrecognized song requests gracefully",
+    "description": "Verify that invalid song request commands or searches with no results return appropriate error feedback to the viewer or streamer.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Send an invalid command like '!play ' (empty query) in TikTok chat."
+      },
+      {
+        "type": "assertion",
+        "description": "System responds with a message indicating invalid request syntax."
+      },
+      {
+        "type": "action",
+        "description": "Send '!play nonexistentsongtitlethatcannotbefound' in TikTok chat."
+      },
+      {
+        "type": "assertion",
+        "description": "System returns a 'song not found' error notification without adding to queue."
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Dashboard live update of session status and queue",
+    "description": "Confirm that dashboard UI updates in near real-time with now playing track, upcoming queue, and viewer requests using WebSocket updates.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Initiate an active session with several queued songs."
+      },
+      {
+        "type": "assertion",
+        "description": "Dashboard shows the currently playing track with correct metadata."
+      },
+      {
+        "type": "assertion",
+        "description": "Queue list displays upcoming tracks with corresponding requester names."
+      },
+      {
+        "type": "action",
+        "description": "Add a new song request via TikTok chat."
+      },
+      {
+        "type": "assertion",
+        "description": "Dashboard queue updates live within low latency displaying the new track."
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Enforce per-user rate limiting on song requests",
+    "description": "Verify that individual viewers cannot exceed the configured number of requests within specified cooldown periods and receive feedback on limit enforcement.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Send multiple song requests from the same viewer rapidly approaching the maximum allowed limit."
+      },
+      {
+        "type": "assertion",
+        "description": "Requests exceeding limit are rejected with appropriate warning messages."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to send another request before cooldown period elapses."
+      },
+      {
+        "type": "assertion",
+        "description": "Request is blocked and viewer receives cooldown notification."
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Content filtering: explicit toggle and banned users/words enforcement",
+    "description": "Test that explicit content toggle and banned words or users list properly filter out disallowed requests and prevent abuse.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Set explicit content toggle OFF in streamer settings."
+      },
+      {
+        "type": "action",
+        "description": "Send a song request with explicit content flagged song."
+      },
+      {
+        "type": "assertion",
+        "description": "Request is rejected or flagged according to content filter settings."
+      },
+      {
+        "type": "action",
+        "description": "Add a banned user and a banned word to the respective lists."
+      },
+      {
+        "type": "action",
+        "description": "Send song requests from the banned user and containing banned words."
+      },
+      {
+        "type": "assertion",
+        "description": "Requests are blocked and appropriate warnings provided."
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Streamer manual controls: skip track and queue management",
+    "description": "Verify that streamers can skip the currently playing track and remove individual requests from the queue via the dashboard controls.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Play a session with an active queue on the dashboard."
+      },
+      {
+        "type": "action",
+        "description": "Click the skip track button."
+      },
+      {
+        "type": "assertion",
+        "description": "Playback skips to the next song and UI updates accordingly."
+      },
+      {
+        "type": "action",
+        "description": "Remove a specific queued song request from the queue list in the dashboard."
+      },
+      {
+        "type": "assertion",
+        "description": "Selected request is removed from the queue and Spotify playback queue is updated."
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Overlay display correctness and real-time updates",
+    "description": "Ensure that the customizable overlay shows current and upcoming song information correctly and that updates are pushed live via WebSocket.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Activate overlay page linked to an active streaming session."
+      },
+      {
+        "type": "assertion",
+        "description": "Overlay displays now playing track with correct metadata formatted for OBS/TikTok Live Studio."
+      },
+      {
+        "type": "action",
+        "description": "Add new requests and skip currently playing songs from the dashboard."
+      },
+      {
+        "type": "assertion",
+        "description": "Overlay updates track and upcoming queue information in real-time with low latency."
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "WebSocket disconnection and reconnection handling",
+    "description": "Confirm that the system detects WebSocket disconnections (TikTok Live and frontend updates) and correctly attempts reconnection without user intervention.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Simulate WebSocket connection drop for TikTok Live chat."
+      },
+      {
+        "type": "assertion",
+        "description": "System attempts automatic reconnection with exponential backoff."
+      },
+      {
+        "type": "action",
+        "description": "Simulate WebSocket connection drop for dashboard client."
+      },
+      {
+        "type": "assertion",
+        "description": "Dashboard front end reconnects to WebSocket and resumes live updates."
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Analytics accuracy and reporting",
+    "description": "Validate that session analytics data such as total requests, unique viewers, most requested songs, and engagement metrics are accurately collected and presented.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Run a live session with multiple viewer song requests and actions."
+      },
+      {
+        "type": "action",
+        "description": "Access the analytics and reporting dashboard screen."
+      },
+      {
+        "type": "assertion",
+        "description": "Displayed analytics accurately reflect the actual number of requests, unique viewers, top songs, and request patterns."
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Security: enforce HTTPS/WSS and JWT-based authentication",
+    "description": "Test that all communication channels (API endpoints, WebSocket connections) use secure HTTPS or WSS protocols and that JWT authentication protects all relevant routes and actions.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Attempt to access protected API routes and WebSocket endpoints without authentication."
+      },
+      {
+        "type": "assertion",
+        "description": "Access is denied and appropriate error messages are returned."
+      },
+      {
+        "type": "action",
+        "description": "Verify all network communications use HTTPS or WSS protocols."
+      },
+      {
+        "type": "assertion",
+        "description": "No insecure HTTP or WS connections are allowed."
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Session persistence with Drizzle ORM and SQLite",
+    "description": "Verify that user sessions, live sessions, and queue items persist correctly in SQLite database managed via Drizzle ORM across server restarts.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create user session and add several song requests to a live session queue."
+      },
+      {
+        "type": "action",
+        "description": "Restart backend server."
+      },
+      {
+        "type": "assertion",
+        "description": "User session remains valid and all live session and queue data persist and reload correctly."
+      }
+    ]
+  }
+]

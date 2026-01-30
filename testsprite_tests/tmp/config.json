@@ -1,0 +1,16 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000",
+  "executionArgs": {
+    "projectName": "song-flow",
+    "projectPath": "/Users/ethanbuntario/Dev/song-flow",
+    "testIds": [],
+    "additionalInstruction": "The login page requires TikTok OAuth which cannot be automated in tests. Please focus on testing the UI components and page rendering without requiring actual OAuth login. For dashboard tests, mock the authentication state.",
+    "envs": {
+      "API_KEY": "sk-user-fXTpLEEfbbnTVGFeOlCVpP3uIWVaQGPEGTjBbhohsZxccjnYdrEkk7OoeSLQvfnV6irMemRvCIB7L6E75r15JPGWjbQXNmefGQtWluh_wIcpyWnKK6EkJbbOO41zRKzvg9k"
+    }
+  },
+  "proxy": "http://62d117f1-8d22-4a26-afed-93394aaaecb0:sisWtdSBBeA6pSArrxA5VZL8aNFS3Y4r@tun.testsprite.com:8080"
+}

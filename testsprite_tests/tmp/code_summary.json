@@ -1,0 +1,84 @@
+{
+  "tech_stack": [
+    "TypeScript",
+    "Next.js 14",
+    "React 18",
+    "SQLite with Drizzle ORM",
+    "NextAuth.js v5 (beta)",
+    "TailwindCSS",
+    "Radix UI",
+    "TikTok Live Connector"
+  ],
+  "features": [
+    {
+      "name": "Authentication",
+      "description": "TikTok OAuth login as primary authentication method, with Spotify OAuth for music integration. Uses NextAuth.js with Drizzle adapter for database sessions.",
+      "files": [
+        "src/auth.ts",
+        "src/app/(auth)/login/page.tsx",
+        "src/app/api/auth/[...nextauth]/route.ts"
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "description": "Main dashboard page showing user session status, Spotify connection status, live session controls, and song queue. Protected route requiring authentication.",
+      "files": [
+        "src/app/dashboard/page.tsx"
+      ]
+    },
+    {
+      "name": "TikTok Live Listener",
+      "description": "Connects to TikTok Live streams via WebSocket to listen for chat commands (!play, !revoke, !skip) from viewers. Handles song requests and queue management.",
+      "files": [
+        "src/lib/tiktok/listener.ts",
+        "src/lib/tiktok/parser.ts"
+      ]
+    },
+    {
+      "name": "TikTok Command Parser",
+      "description": "Parses chat messages from TikTok Live to extract song request commands. Supports !play, !revoke, and !skip commands.",
+      "files": [
+        "src/lib/tiktok/parser.ts"
+      ]
+    },
+    {
+      "name": "Spotify Integration",
+      "description": "Spotify Web API client for searching tracks, adding songs to the playback queue, skipping tracks, and getting currently playing information.",
+      "files": [
+        "src/lib/spotify/client.ts"
+      ]
+    },
+    {
+      "name": "Database Layer",
+      "description": "SQLite database with Drizzle ORM. Includes tables for users, accounts (OAuth tokens), sessions, live sessions, and queue items for song requests.",
+      "files": [
+        "src/lib/db/index.ts",
+        "src/lib/db/schema.ts"
+      ]
+    },
+    {
+      "name": "UI Components",
+      "description": "Reusable UI components built with Radix UI primitives and styled with TailwindCSS. Includes Avatar, Badge, Button, Card, Dialog, Dropdown Menu, Input, Separator, Skeleton, and Toast components.",
+      "files": [
+        "src/components/ui/avatar.tsx",
+        "src/components/ui/badge.tsx",
+        "src/components/ui/button.tsx",
+        "src/components/ui/card.tsx",
+        "src/components/ui/dialog.tsx",
+        "src/components/ui/dropdown-menu.tsx",
+        "src/components/ui/input.tsx",
+        "src/components/ui/separator.tsx",
+        "src/components/ui/skeleton.tsx",
+        "src/components/ui/toast.tsx",
+        "src/components/ui/toaster.tsx"
+      ]
+    },
+    {
+      "name": "Toast Notifications",
+      "description": "Toast notification hook for displaying success, error, and info messages throughout the application.",
+      "files": [
+        "src/hooks/use-toast.ts"
+      ]
+    }
+  ]
+}

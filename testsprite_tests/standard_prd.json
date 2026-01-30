@@ -1,0 +1,140 @@
+{
+  "meta": {
+    "project": "SongFlow - TikTok Song Requests Platform",
+    "date": "2026-01-29",
+    "prepared_by": "Software Development Manager"
+  },
+  "product_overview": "SongFlow is a real-time TikTok Live song request platform designed for Indonesian streamers. It integrates TikTok OAuth login with Spotify OAuth to allow viewers to request songs via TikTok Live chat commands, which are searched on Spotify and queued to the streamer's playback. Streamers manage requests, view live session stats, and display overlays via a web dashboard. The product offers engagement tools for streamers to interact with viewers and enhance live music experiences.",
+  "core_goals": [
+    "Enable seamless TikTok OAuth login and Spotify OAuth integration for streamers.",
+    "Provide real-time monitoring and parsing of TikTok Live chat to detect song request commands.",
+    "Search and queue requested songs on the streamer's Spotify device with responsive updates.",
+    "Offer a user-friendly dashboard showing live session status, now playing, queue, and request analytics.",
+    "Enforce per-user request rate limits and content filtering to maintain quality and prevent abuse.",
+    "Deliver a customizable overlay for broadcasting live song information through OBS or TikTok Live Studio.",
+    "Ensure robust system architecture supporting real-time WebSocket communication and persistent storage with secure authentication.",
+    "Support multi-tier monetization with free and premium features tailored for Indonesian content creators."
+  ],
+  "key_features": [
+    "TikTok OAuth login for primary authentication using NextAuth.js v5 with Drizzle ORM for session management.",
+    "Spotify OAuth integration allowing control over user's playback, including queuing and skipping tracks.",
+    "Real-time TikTok Live chat listener using tiktok-live-connector for parsing commands like !play, !revoke, !skip.",
+    "Song request processing including search via Spotify Web API, queue management, and handling of special command inputs or URLs.",
+    "Comprehensive dashboard displaying live session metrics: current track, queue list with requester names, request settings, and top viewer analytics.",
+    "Overlay views optimized for OBS and TikTok Live Studio showing now playing and upcoming tracks with real-time WebSocket updates.",
+    "Rate limiting and spam prevention using Redis and database support to cap per-user requests and cooldown.",
+    "Content filtering including explicit content toggle and banned words/users list configurable by streamers.",
+    "Manual controls for streamers including skip track button and queue management.",
+    "Analytics and reporting features providing insights on session engagement and viewer behavior.",
+    "Security mechanisms including encrypted Spotify tokens, HTTPS/WSS, JWT-based auth, and compliance with Indonesian data privacy laws."
+  ],
+  "user_flow_summary": [
+    "User visits SongFlow and clicks \"Login with TikTok\" to authenticate via TikTok OAuth.",
+    "After successful login, user is prompted to connect their Spotify account via OAuth to enable music queue control.",
+    "User verifies active TikTok Live stream and starts a new session from the dashboard.",
+    "The backend connects to TikTok Live chat via WebSocket and listens for song request commands from viewers.",
+    "When a viewer sends a valid command (e.g., !lagu Shape of You), the system parses it, searches Spotify, and queues requested tracks to the streamer's playback device.",
+    "The dashboard updates live with now playing track, next up queue, and requesters, using WebSocket to push updates to frontend clients.",
+    "Streamer manages requests from the dashboard, including skipping songs or removing requests as needed.",
+    "The overlay page is used in OBS or TikTok Live Studio to display the current and upcoming songs live on stream.",
+    "Per-user rate limits and content filters ensure quality and prevent abuse, with feedback provided to viewers in chat or dashboard.",
+    "Analytics data is collected and presented to streamers to review session performance and viewer engagement metrics."
+  ],
+  "validation_criteria": [
+    "Successful TikTok OAuth login flow with correct user identity and session persistence.",
+    "Spotify OAuth integration with access token refresh and playback control verified.",
+    "Reliable connection to TikTok Live chat via WebSocket and accurate parsing of supported commands (!play, !revoke, !skip).",
+    "Song request commands properly search Spotify API and queue tracks onto the user's playback device.",
+    "Real-time dashboard updates through WebSocket showing current track, queue, and session stats without significant latency.",
+    "Enforcement of per-user rate limiting, including cooldown periods and maximum requests per session.",
+    "Content filtering behaves correctly with explicit content toggle and banned list enforcement.",
+    "Overlay displays live information correctly and updates seamlessly along with the dashboard.",
+    "Security checks ensuring encrypted sensitive data, HTTPS/WSS communication, and appropriate authorization on actions.",
+    "Analytics reports are accurate and reflect actual session data and viewer interactions.",
+    "System uptime meets target reliability with proper error handling and reconnection logic for WebSocket connections."
+  ],
+  "code_summary": {
+    "tech_stack": [
+      "TypeScript",
+      "Next.js 14",
+      "React 18",
+      "SQLite with Drizzle ORM",
+      "NextAuth.js v5 (beta)",
+      "TailwindCSS",
+      "Radix UI",
+      "TikTok Live Connector"
+    ],
+    "features": [
+      {
+        "name": "Authentication",
+        "description": "TikTok OAuth login as primary authentication method, with Spotify OAuth for music integration. Uses NextAuth.js with Drizzle adapter for database sessions.",
+        "files": [
+          "src/auth.ts",
+          "src/app/(auth)/login/page.tsx",
+          "src/app/api/auth/[...nextauth]/route.ts"
+        ]
+      },
+      {
+        "name": "Dashboard",
+        "description": "Main dashboard page showing user session status, Spotify connection status, live session controls, and song queue. Protected route requiring authentication.",
+        "files": [
+          "src/app/dashboard/page.tsx"
+        ]
+      },
+      {
+        "name": "TikTok Live Listener",
+        "description": "Connects to TikTok Live streams via WebSocket to listen for chat commands (!play, !revoke, !skip) from viewers. Handles song requests and queue management.",
+        "files": [
+          "src/lib/tiktok/listener.ts",
+          "src/lib/tiktok/parser.ts"
+        ]
+      },
+      {
+        "name": "TikTok Command Parser",
+        "description": "Parses chat messages from TikTok Live to extract song request commands. Supports !play, !revoke, and !skip commands.",
+        "files": [
+          "src/lib/tiktok/parser.ts"
+        ]
+      },
+      {
+        "name": "Spotify Integration",
+        "description": "Spotify Web API client for searching tracks, adding songs to the playback queue, skipping tracks, and getting currently playing information.",
+        "files": [
+          "src/lib/spotify/client.ts"
+        ]
+      },
+      {
+        "name": "Database Layer",
+        "description": "SQLite database with Drizzle ORM. Includes tables for users, accounts (OAuth tokens), sessions, live sessions, and queue items for song requests.",
+        "files": [
+          "src/lib/db/index.ts",
+          "src/lib/db/schema.ts"
+        ]
+      },
+      {
+        "name": "UI Components",
+        "description": "Reusable UI components built with Radix UI primitives and styled with TailwindCSS. Includes Avatar, Badge, Button, Card, Dialog, Dropdown Menu, Input, Separator, Skeleton, and Toast components.",
+        "files": [
+          "src/components/ui/avatar.tsx",
+          "src/components/ui/badge.tsx",
+          "src/components/ui/button.tsx",
+          "src/components/ui/card.tsx",
+          "src/components/ui/dialog.tsx",
+          "src/components/ui/dropdown-menu.tsx",
+          "src/components/ui/input.tsx",
+          "src/components/ui/separator.tsx",
+          "src/components/ui/skeleton.tsx",
+          "src/components/ui/toast.tsx",
+          "src/components/ui/toaster.tsx"
+        ]
+      },
+      {
+        "name": "Toast Notifications",
+        "description": "Toast notification hook for displaying success, error, and info messages throughout the application.",
+        "files": [
+          "src/hooks/use-toast.ts"
+        ]
+      }
+    ]
+  }
+}
