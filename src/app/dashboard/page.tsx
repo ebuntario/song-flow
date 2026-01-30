@@ -2,6 +2,7 @@ import { auth, signIn, signOut } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { LiveSessionPanel } from "@/components/live-session-panel";
 import { getSpotifyToken } from "@/lib/spotify/client";
 import { redirect } from "next/navigation";
 
@@ -65,35 +66,8 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Live Session</h2>
-                <div className="flex items-center gap-2">
-                    <span className="relative flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                    </span>
-                    <span className="text-sm font-medium text-red-500">Offline</span>
-                </div>
-            </div>
-
-            <Button size="lg" className="w-full h-14 text-lg bg-green-600 hover:bg-green-700">
-                Start Session
-            </Button>
-        </div>
+        <LiveSessionPanel />
       )}
-
-      {/* Queue Section (Placeholder) */}
-        {spotifyToken && (
-            <Card className="mt-8">
-                <CardHeader>
-                    <CardTitle>Queue (0)</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center py-8 text-muted-foreground">
-                    No requests yet.
-                </CardContent>
-            </Card>
-        )}
     </div>
   );
 }
