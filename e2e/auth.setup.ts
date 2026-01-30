@@ -8,7 +8,7 @@ const authFile = "playwright/.auth/user.json";
  */
 setup("authenticate", async ({ request, context }) => {
   // Call the test login endpoint to create a session
-  const response = await request.post("/api/__test__/login", {
+  const response = await request.post("/api/test-auth/login", {
     data: {
       username: "test_user",
     },
