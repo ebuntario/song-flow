@@ -125,8 +125,8 @@ export default function PrivacyPolicyPage() {
             </ul>
             <p className="text-muted-foreground leading-relaxed mt-3">
               To exercise these rights, please contact us at{" "}
-              <a href="mailto:support@songflow.id" className="text-primary underline underline-offset-4 hover:text-primary/80">
-                support@songflow.id
+              <a href="mailto:ebuntario@gmail.com" className="text-primary underline underline-offset-4 hover:text-primary/80">
+                ebuntario@gmail.com
               </a>
             </p>
           </section>
@@ -152,8 +152,8 @@ export default function PrivacyPolicyPage() {
             </p>
             <p className="text-muted-foreground leading-relaxed mt-3">
               Email:{" "}
-              <a href="mailto:support@songflow.id" className="text-primary underline underline-offset-4 hover:text-primary/80">
-                support@songflow.id
+              <a href="mailto:ebuntario@gmail.com" className="text-primary underline underline-offset-4 hover:text-primary/80">
+                ebuntario@gmail.com
               </a>
             </p>
           </section>
