@@ -175,13 +175,15 @@ PORT=4000
 - [x] E2E tests (Playwright): 22/22 passing
 - [x] Test auth endpoint for E2E
 
-### Phase 5: Deploy (Next 🟡)
+### Phase 5: Deploy (Completed ✅)
 
-- [ ] Deploy backend to Railway
-- [ ] Configure production environment variables
-- [ ] Deploy frontend to Vercel
-- [ ] Domain setup
-- [ ] Beta testing
+- [x] Deploy backend to Railway (Bun + Elysia)
+- [x] Configure production environment variables
+- [x] Deploy frontend to Vercel
+- [x] Setup Neon PostgreSQL for production
+- [x] Pre-commit hooks (Husky + lint-staged)
+- [ ] Domain setup (optional)
+- [ ] Beta testing (upcoming)
 
 ---
 
@@ -208,3 +210,9 @@ TEST_MODE=true npm run test:e2e
   Spotify integration, session management, and real-time updates. Frontend now
   connects via WebSocket for live queue updates. All tests passing (31 unit + 22
   E2E).
+
+- **Jan 31 2026**: Production deployment complete! Backend deployed to Railway
+  (Bun + Elysia via Dockerfile), frontend to Vercel, database to Neon
+  PostgreSQL. Added conditional database connection (SQLite for dev, Neon for
+  prod). Set up pre-commit hooks with Husky + lint-staged for ESLint
+  enforcement.

@@ -3,322 +3,162 @@
 **Project:** SongFlow - TikTok Song Requests Platform\
 **Developer:** Solo\
 **Start Date:** January 30, 2026\
-**Target Launch:** Week 10 (Early April 2026)\
-**Status:** 🟢 Planning Complete
+**Status:** 🟢 MVP Deployed
 
 ---
 
-## Confirmed Stack
+## Approach Taken: Simplified Local-First MVP
 
-| Component | Technology                         |
-| --------- | ---------------------------------- |
-| Frontend  | Next.js 14 + Tailwind + shadcn/ui  |
-| Backend   | NestJS (Railway)                   |
-| Database  | **Neon** (Serverless PostgreSQL)   |
-| Cache     | Redis (Railway)                    |
-| Auth      | NextAuth.js + TikTok/Spotify OAuth |
-| Payments  | Midtrans (post-MVP)                |
-| Theme     | Dark mode (modern)                 |
+> **Note:** We followed the [simplified-mvp.md](./simplified-mvp.md) approach
+> instead of the original 10-week plan. This was faster and more practical for a
+> solo developer.
 
----
-
-## Quick Status
-
-| Phase                             | Status         | Progress | Weeks |
-| --------------------------------- | -------------- | -------- | ----- |
-| **Phase 1:** Foundation           | 🔴 Not Started | 0%       | 1–2   |
-| **Phase 2:** Core Features        | 🔴 Not Started | 0%       | 3–5   |
-| **Phase 3:** Dashboard & Overlay  | 🔴 Not Started | 0%       | 6–7   |
-| **Phase 4:** Analytics & Settings | 🔴 Not Started | 0%       | 8–9   |
-| **Phase 5:** Polish & Launch      | 🔴 Not Started | 0%       | 10    |
-
-**Legend:** 🔴 Not Started | 🟡 In Progress | 🟢 Complete
+| Original Plan       | Actual Implementation       |
+| ------------------- | --------------------------- |
+| NestJS backend      | **Bun + Elysia**            |
+| Redis for sessions  | **PostgreSQL only**         |
+| 10 weeks timeline   | **~2 days to deployed MVP** |
+| Complex cloud setup | **SQLite dev → Neon prod**  |
 
 ---
 
-## Phase 1: Foundation (Weeks 1–2)
+## Current Stack
 
-### 1.1 Project Initialization
-
-- [ ] Initialize Next.js 14 with App Router
-- [ ] Setup NestJS backend
-- [ ] Configure ESLint, Prettier
-- [ ] Setup environment variables
-- [ ] Docker Compose for local Redis
-
-### 1.2 Neon Database Setup
-
-- [ ] Create Neon project
-- [ ] Setup database schema (Drizzle ORM)
-- [ ] Create dev branch for development
-- [ ] Configure connection pooling
-- [ ] Setup migrations
-
-### 1.3 Authentication
-
-- [ ] NextAuth.js setup
-- [ ] TikTok OAuth provider
-- [ ] Spotify OAuth flow
-- [ ] Auth middleware
-- [ ] Protected routes
-
-### 1.4 UI Foundation
-
-- [ ] Install shadcn/ui
-- [ ] Configure dark theme
-- [ ] Setup color palette
-- [ ] Configure components
-- [ ] Create layouts
-
-### 1.5 Railway Setup
-
-- [ ] Create Railway project
-- [ ] Deploy NestJS backend
-- [ ] Setup Redis
-- [ ] Configure secrets
-- [ ] Setup deployment pipeline
-
-**Deliverables:**
-
-- [ ] Auth flow working
-- [ ] Database deployed on Neon
-- [ ] UI components ready
-- [ ] Dev environment functional
+| Component | Technology                                | Status     |
+| --------- | ----------------------------------------- | ---------- |
+| Frontend  | Next.js 14 + Tailwind + shadcn/ui         | ✅ Vercel  |
+| Backend   | **Bun + Elysia**                          | ✅ Railway |
+| Database  | SQLite (dev) / **Neon PostgreSQL** (prod) | ✅         |
+| ORM       | Drizzle ORM                               | ✅         |
+| Auth      | NextAuth.js v5 + TikTok/Spotify OAuth     | ✅         |
+| Real-time | WebSocket (Elysia WS)                     | ✅         |
+| TikTok    | tiktok-live-connector                     | ✅         |
+| Theme     | Dark mode                                 | ✅         |
 
 ---
 
-## Phase 2: Core Features (Weeks 3–5)
+## Phase Summary
 
-### 2.1 Session Management
-
-- [ ] Start Session page
-- [ ] Session state (Redis)
-- [ ] Session API endpoints
-- [ ] Session cleanup
-
-### 2.2 TikTok Live Integration
-
-- [ ] tiktok-live-connector integration
-- [ ] Chat listener
-- [ ] Command parser (!lagu, !song)
-- [ ] Reconnection logic
-
-### 2.3 Spotify Integration
-
-- [ ] Token refresh service
-- [ ] Search API
-- [ ] Queue management
-- [ ] Currently playing
-- [ ] Skip track
-
-### 2.4 Song Request Pipeline
-
-- [ ] Request validation
-- [ ] Rate limiting (Redis)
-- [ ] Queue structure
-- [ ] PostgreSQL logging
-
-### 2.5 WebSocket Gateway
-
-- [ ] Socket.io setup
-- [ ] Room management
-- [ ] Event types
-- [ ] Heartbeat
-
-**Deliverables:**
-
-- [ ] Song request flow complete
-- [ ] Real-time updates
-- [ ] Rate limiting functional
+| Phase                       | Status      | Notes                                      |
+| --------------------------- | ----------- | ------------------------------------------ |
+| **1. Foundation**           | ✅ Complete | Next.js, Auth, UI components               |
+| **2. Backend Service**      | ✅ Complete | Bun + Elysia, TikTok listener, Spotify API |
+| **3. Frontend Integration** | ✅ Complete | WebSocket hook, real-time updates          |
+| **4. Testing**              | ✅ Complete | 31 unit + 22 E2E tests passing             |
+| **5. Deployment**           | ✅ Complete | Vercel + Railway + Neon                    |
 
 ---
 
-## Phase 3: Dashboard & Overlay (Weeks 6–7)
+## What's Deployed
 
-### 3.1 Dashboard
+### Frontend (Vercel)
 
-- [ ] Layout (mobile-first)
-- [ ] Live Session Panel
-- [ ] Now Playing Card
-- [ ] Queue List
-- [ ] Request Settings
-- [ ] Top Requesters
+- Login page with TikTok OAuth
+- Dashboard with session management
+- Real-time queue display via WebSocket
+- Legal pages (ToS, Privacy Policy)
 
-### 3.2 WebSocket Frontend
+### Backend (Railway)
 
-- [ ] useWebSocket hook
-- [ ] TanStack Query
-- [ ] Optimistic updates
-- [ ] Connection status
+- Session start/stop endpoints
+- TikTok WebSocket listener (tiktok-live-connector)
+- Spotify integration (search, queue, skip)
+- WebSocket gateway for real-time updates
+- Rate limiting
+- Health endpoint
 
-### 3.3 Overlay
+### Database (Neon)
 
-- [ ] Public route
-- [ ] Compact layout
-- [ ] Wide layout (optional)
-- [ ] Transparent styling
-- [ ] Smooth animations
-
-### 3.4 Overlay Config
-
-- [ ] Settings in dashboard
-- [ ] Copy Overlay URL
-- [ ] Preview modal
-
-**Deliverables:**
-
-- [ ] Dashboard functional
-- [ ] Overlay in OBS
-- [ ] Real-time sync
+- Users, accounts, sessions (NextAuth)
+- live_sessions, queue_items (app data)
 
 ---
 
-## Phase 4: Analytics & Settings (Weeks 8–9)
+## Remaining Items (Post-MVP)
 
-### 4.1 Session Summary
+### Nice to Have
 
-- [ ] Summary page
-- [ ] Store analytics
-- [ ] Top songs/requesters
+- [ ] Custom domain setup
+- [ ] Overlay page for OBS
+- [ ] Session summary/analytics
+- [ ] Moderation tools (ban viewer, blocked words)
+- [ ] Payment integration (Midtrans)
 
-### 4.2 Historical Analytics
+### Tech Debt
 
-- [ ] Analytics page
-- [ ] Past sessions list
-- [ ] All-time stats
-
-### 4.3 Settings
-
-- [ ] Account tab
-- [ ] Request defaults
-- [ ] Moderation tab
-
-### 4.4 Moderation
-
-- [ ] Ban viewer
-- [ ] Banned words
-- [ ] Filter check
-
-**Deliverables:**
-
-- [ ] Session summaries
-- [ ] Analytics page
-- [ ] Settings working
-- [ ] Moderation tools
+- [ ] Rotate OAuth credentials (were in git history)
+- [ ] Add Sentry/error monitoring
+- [ ] Add proper logging service
+- [ ] CI/CD pipeline improvements
 
 ---
 
-## Phase 5: Polish & Launch (Week 10)
+## Key Files
 
-### 5.1 Performance
-
-- [ ] Bundle optimization
-- [ ] Lazy loading
-- [ ] Image optimization
-
-### 5.2 Testing
-
-- [ ] Unit tests
-- [ ] Integration tests
-- [ ] Manual E2E
-
-### 5.3 Deployment
-
-- [ ] Vercel production
-- [ ] Railway production
-- [ ] Neon production branch
-- [ ] Domain setup
-- [ ] SSL configured
-
-### 5.4 Monitoring
-
-- [ ] Sentry integration
-- [ ] Health endpoint
-
-### 5.5 Launch Materials
-
-- [ ] Landing page
-- [ ] Onboarding flow
-- [ ] FAQ page
-- [ ] Privacy policy
-
-### 5.6 Beta
-
-- [ ] 20 beta testers
-- [ ] Feedback collection
-- [ ] Bug fixes
-
-**Deliverables:**
-
-- [ ] Production ready
-- [ ] Monitoring active
-- [ ] Beta launched
+```
+song-flow/
+├── src/                              # Frontend (Next.js)
+│   ├── app/
+│   │   ├── dashboard/page.tsx
+│   │   ├── login/page.tsx
+│   │   ├── tos/page.tsx
+│   │   ├── policy/page.tsx
+│   │   └── api/
+│   ├── lib/db/
+│   │   ├── index.ts                  # Conditional Neon/SQLite
+│   │   ├── schema.ts                 # SQLite schema
+│   │   └── schema-pg.ts              # PostgreSQL schema
+│   └── hooks/use-backend-ws.ts       # WebSocket hook
+│
+├── backend/                          # Backend (Bun + Elysia)
+│   ├── src/index.ts                  # Main app + routes
+│   ├── Dockerfile
+│   └── railway.toml                  # Railway config
+│
+├── drizzle.config.ts                 # SQLite migrations
+├── drizzle-pg.config.ts              # PostgreSQL migrations
+└── docs/
+    ├── simplified-mvp.md             # ← Primary reference
+    └── development-progress.md       # This file
+```
 
 ---
 
-## Key Milestones
+## Commands
 
-| Milestone          | Target | Status |
-| ------------------ | ------ | ------ |
-| Dev kickoff        | Feb 1  | 🔴     |
-| Auth complete      | Feb 14 | 🔴     |
-| Core features demo | Mar 7  | 🔴     |
-| Dashboard MVP      | Mar 21 | 🔴     |
-| Beta launch        | Apr 4  | 🔴     |
+```bash
+# Development
+pnpm dev                              # Frontend
+cd backend && bun run dev             # Backend
 
----
+# Database
+pnpm db:push                          # Push SQLite schema
+pnpm db:push:pg                       # Push PostgreSQL schema
+pnpm db:studio                        # Open Drizzle Studio
 
-## Blockers & Issues
-
-| Issue    | Priority | Status | Notes |
-| -------- | -------- | ------ | ----- |
-| None yet | -        | -      | -     |
-
----
-
-## Weekly Updates
-
-### Week 0 (Jan 30, 2026)
-
-- ✅ Created development plan
-- ✅ Confirmed tech stack (Neon, Railway, shadcn/ui)
-- ✅ Set up progress tracking
-- ✅ Created simplified MVP option
-- 🎯 Ready to start Phase 1
+# Testing
+pnpm test                             # Unit tests
+pnpm test:e2e                         # E2E tests
+```
 
 ---
 
-## UX Checklist (Before Each Feature)
+## Timeline
 
-Reference: [ux-guidelines.md](../ux-guidelines.md)
-
-- [ ] Self-evident in 3 seconds?
-- [ ] Primary action obvious?
-- [ ] Unnecessary words removed?
-- [ ] Consistent terminology?
-- [ ] Error states helpful?
-- [ ] Works on mobile (375pt)?
-- [ ] Touch targets ≥44pt?
-
----
-
-## Alternative: Simplified MVP
-
-See [simplified-mvp.md](./simplified-mvp.md) for a faster local-first approach:
-
-- SQLite locally → Neon on deploy
-- 4-5 weeks instead of 10
-- Zero cloud config for local dev
+| Date         | Milestone                                         |
+| ------------ | ------------------------------------------------- |
+| Jan 30, 2026 | Project started, planning complete                |
+| Jan 31, 2026 | Backend service complete, all tests passing       |
+| Jan 31, 2026 | **Production deployed** (Vercel + Railway + Neon) |
 
 ---
 
 ## Reference Docs
 
+- [Simplified MVP](./simplified-mvp.md) ← **Primary reference**
 - [PRD](./prd-tikfinity-clone.md)
 - [TAD](./songflow-tad-part1.md)
-- [UX Guidelines](../ux-guidelines.md)
-- [Simplified MVP](./simplified-mvp.md)
 
 ---
 
-_Last Updated: January 30, 2026_
+_Last Updated: January 31, 2026_
