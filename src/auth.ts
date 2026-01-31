@@ -29,6 +29,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     TikTok, // Primary login
     Spotify({
       authorization: {
+        url: "https://accounts.spotify.com/authorize",
         params: {
           scope: "user-read-playback-state user-modify-playback-state user-read-currently-playing",
         },
