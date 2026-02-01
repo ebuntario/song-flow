@@ -6,6 +6,11 @@ const nextConfig = {
     serverComponentsExternalPackages: ["better-sqlite3"],
   },
   
+  // Explicitly expose public env vars to ensure they're bundled
+  env: {
+    NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL,
+  },
+  
   // Allow external images from OAuth providers
   images: {
     remotePatterns: [
