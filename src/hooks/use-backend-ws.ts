@@ -40,9 +40,19 @@ interface UseBackendWSReturn {
   removeFromQueue: (itemId: string) => Promise<void>;
 }
 
-// For production on Railway: use empty string (same-origin, via Next.js rewrite)
+// For production on Railway: set NEXT_PUBLIC_BACKEND_URL to backend's public URL
 // For local dev: set NEXT_PUBLIC_BACKEND_URL=http://localhost:4000
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "";
+const TEST_MODE = process.env.NEXT_PUBLIC_TEST_MODE === "true";
+
+// Log config when TEST_MODE is enabled
+if (TEST_MODE && typeof window !== "undefined") {
+  console.log("[SongFlow] Frontend config:", {
+    BACKEND_URL: BACKEND_URL || "(empty - same origin)",
+    TEST_MODE,
+    timestamp: new Date().toISOString(),
+  });
+}
 
 export function useBackendWS(): UseBackendWSReturn {
   const wsRef = useRef<WebSocket | null>(null);

@@ -32,6 +32,18 @@ const tiktokService = new TikTokService(emitToUser);
 
 // Normalize FRONTEND_URL (remove trailing slash if present)
 const frontendUrl = (process.env.FRONTEND_URL ?? "http://localhost:3000").replace(/\/$/, "");
+const testMode = process.env.TEST_MODE === "true";
+
+// Log all config when TEST_MODE is enabled
+if (testMode) {
+  logger.info("Backend configuration (TEST_MODE)", {
+    FRONTEND_URL: frontendUrl,
+    PORT: process.env.PORT ?? 4000,
+    DATABASE_URL: process.env.DATABASE_URL ? "SET" : "NOT SET",
+    TEST_MODE: testMode,
+  });
+}
+
 logger.info("CORS configuration loaded", { allowedOrigin: frontendUrl });
 
 // Create Elysia app
