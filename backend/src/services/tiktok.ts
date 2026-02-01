@@ -3,6 +3,7 @@ import { parseCommand } from "../lib/parser";
 import { checkRateLimit } from "../lib/rate-limit";
 import { addQueueItem, endLiveSession } from "../db/queries";
 import { searchSpotifyTrack } from "./spotify";
+import { logger } from "../lib/logger";
 
 type EventEmitter = (userId: string, event: unknown) => void;
 
@@ -31,7 +32,7 @@ export class TikTokService {
   ): Promise<void> {
     // Check if already listening
     if (this.connections.has(sessionId)) {
-      console.log(`Already listening to session ${sessionId}`);
+      logger.warn("Already listening to session", { sessionId });
       return;
     }
 
@@ -42,25 +43,25 @@ export class TikTokService {
       try {
         await this.handleChat(sessionId, userId, spotifyToken, data);
       } catch (err) {
-        console.error("Error handling chat:", err);
+        logger.error("Error handling chat", { sessionId, error: String(err) });
       }
     });
 
     // Handle stream end
     connection.on("streamEnd", async () => {
-      console.log(`Stream ended for ${tiktokUsername}`);
+      logger.info("Stream ended", { sessionId, username: tiktokUsername });
       await this.handleStreamEnd(sessionId, userId);
     });
 
     // Handle disconnection
     connection.on("disconnected", () => {
-      console.log(`Disconnected from ${tiktokUsername}`);
+      logger.info("Disconnected from stream", { sessionId, username: tiktokUsername });
     });
 
     // Connect
     try {
       const state = await connection.connect();
-      console.log(`Connected to ${tiktokUsername} (Room: ${state.roomId})`);
+      logger.info("Connected to TikTok stream", { sessionId, username: tiktokUsername, roomId: state.roomId });
       
       this.connections.set(sessionId, { connection, userId, sessionId });
       
@@ -70,7 +71,7 @@ export class TikTokService {
         roomId: state.roomId,
       });
     } catch (err) {
-      console.error(`Failed to connect to ${tiktokUsername}:`, err);
+      logger.error("Failed to connect to TikTok stream", { sessionId, username: tiktokUsername, error: String(err) });
       throw err;
     }
   }
@@ -85,7 +86,7 @@ export class TikTokService {
     info.connection.disconnect();
     this.connections.delete(sessionId);
     
-    console.log(`Stopped listening to session ${sessionId}`);
+    logger.info("Stopped listening to session", { sessionId });
   }
 
   /**
@@ -104,7 +105,7 @@ export class TikTokService {
 
     // Rate limit check
     if (!checkRateLimit(viewerId)) {
-      console.log(`Rate limited: ${viewerId}`);
+      logger.debug("Rate limited viewer", { sessionId, viewerId });
       return;
     }
 
@@ -112,7 +113,7 @@ export class TikTokService {
       // Search Spotify
       const track = await searchSpotifyTrack(spotifyToken, command.query);
       if (!track) {
-        console.log(`No track found for: ${command.query}`);
+        logger.debug("No track found for query", { sessionId, query: command.query });
         return;
       }
 
@@ -130,7 +131,12 @@ export class TikTokService {
         item: queueItem,
       });
 
-      console.log(`Queued: ${track.name} by ${track.artists[0]?.name ?? "Unknown"} (from ${data.uniqueId})`);
+      logger.info("Track queued", { 
+        sessionId, 
+        trackName: track.name, 
+        artist: track.artists[0]?.name ?? "Unknown", 
+        requestedBy: data.uniqueId 
+      });
     }
 
     // TODO: Handle revoke and skip commands
@@ -160,7 +166,7 @@ export class TikTokService {
    * Disconnect all connections (for shutdown)
    */
   disconnectAll(): void {
-    for (const [sessionId, info] of this.connections) {
+    for (const info of this.connections.values()) {
       info.connection.disconnect();
     }
     this.connections.clear();

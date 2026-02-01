@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { liveSessions, queueItems } from "@/lib/db/schema";
 import { and, desc, eq } from "drizzle-orm";
 import { addToQueue, getSpotifyToken, searchTracks, skipTrack } from "@/lib/spotify/client";
+import { logger } from "@/lib/logger";
 
 export async function startListener(tiktokUsername: string, sessionId: string, userId: string) {
   const connection = new WebcastPushConnection(tiktokUsername);
@@ -28,7 +29,13 @@ export async function startListener(tiktokUsername: string, sessionId: string, u
           break;
       }
     } catch (error) {
-      console.error(`Error handling ${command.type} from ${viewer}:`, error);
+      logger.error("Error handling TikTok command", { 
+        component: "tiktok-listener", 
+        sessionId, 
+        commandType: command.type, 
+        viewer, 
+        error: String(error) 
+      });
     }
   });
 
@@ -36,18 +43,18 @@ export async function startListener(tiktokUsername: string, sessionId: string, u
     await db.update(liveSessions)
       .set({ status: "ended", endedAt: new Date() })
       .where(eq(liveSessions.id, sessionId));
-    console.log(`Stream ended for session ${sessionId}`);
+    logger.info("Stream ended", { component: "tiktok-listener", sessionId });
   });
 
   await connection.connect();
-  console.log(`Connected to @${tiktokUsername} live stream`);
+  logger.info("Connected to TikTok live stream", { component: "tiktok-listener", username: tiktokUsername });
   return connection;
 }
 
 async function handlePlay(sessionId: string, userId: string, viewer: string, query: string) {
   const token = await getSpotifyToken(userId);
   if (!token) {
-    console.error("No Spotify token available");
+    logger.error("No Spotify token available", { component: "tiktok-listener", sessionId, userId });
     return;
   }
 
@@ -55,7 +62,7 @@ async function handlePlay(sessionId: string, userId: string, viewer: string, que
   const results = await searchTracks(token, query);
   const track = results.tracks?.items?.[0];
   if (!track) {
-    console.log(`No track found for query: ${query}`);
+    logger.debug("No track found for query", { component: "tiktok-listener", sessionId, query });
     return;
   }
 
@@ -81,7 +88,13 @@ async function handlePlay(sessionId: string, userId: string, viewer: string, que
 
   // Add to Spotify queue
   await addToQueue(token, track.uri);
-  console.log(`Added "${track.name}" by ${track.artists[0]?.name} to queue (requested by ${viewer})`);
+  logger.info("Track added to queue", { 
+    component: "tiktok-listener", 
+    sessionId, 
+    trackName: track.name, 
+    artist: track.artists[0]?.name, 
+    requestedBy: viewer 
+  });
 }
 
 async function handleRevoke(sessionId: string, viewer: string) {
@@ -97,7 +110,7 @@ async function handleRevoke(sessionId: string, viewer: string) {
 
   if (item) {
     await db.update(queueItems).set({ status: "revoked" }).where(eq(queueItems.id, item.id));
-    console.log(`Revoked request from ${viewer}: ${item.trackTitle}`);
+    logger.info("Request revoked", { component: "tiktok-listener", sessionId, viewer, trackTitle: item.trackTitle });
   }
 }
 
@@ -105,6 +118,6 @@ async function handleSkip(userId: string) {
   const token = await getSpotifyToken(userId);
   if (token) {
     await skipTrack(token);
-    console.log("Skipped current track");
+    logger.info("Skipped current track", { component: "tiktok-listener", userId });
   }
 }

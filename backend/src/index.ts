@@ -1,4 +1,4 @@
-import { Elysia, t } from "elysia";
+import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { TikTokService } from "./services/tiktok";
 import { getSpotifyToken } from "./services/spotify";
@@ -11,6 +11,7 @@ import {
   getQueueForSession,
   skipQueueItem,
 } from "./db/queries";
+import { logger } from "./lib/logger";
 
 // WebSocket clients by userId
 const wsClients = new Map<string, Set<{ send: (data: string) => void }>>();
@@ -31,7 +32,7 @@ const tiktokService = new TikTokService(emitToUser);
 
 // Normalize FRONTEND_URL (remove trailing slash if present)
 const frontendUrl = (process.env.FRONTEND_URL ?? "http://localhost:3000").replace(/\/$/, "");
-console.log(`[CORS] Allowed origin: ${frontendUrl}`);
+logger.info("CORS configuration loaded", { allowedOrigin: frontendUrl });
 
 // Create Elysia app
 const app = new Elysia()
@@ -98,7 +99,7 @@ const app = new Elysia()
         user.id,
         spotifyToken
       );
-    } catch (err) {
+    } catch {
       // Failed to connect - end session
       await endLiveSession(session.id);
       set.status = 503;
@@ -173,11 +174,11 @@ const app = new Elysia()
   .ws("/ws/dashboard", {
     async open(ws) {
       // Parse cookie from upgrade headers - type varies by runtime
-      const headers = (ws.data as any)?.headers;
+      const headers = (ws.data as { headers?: { get?: (name: string) => string; cookie?: string } })?.headers;
       const cookieHeader = typeof headers?.get === "function" 
         ? headers.get("cookie") 
         : (headers?.cookie ?? "");
-      const user = await validateRequest(cookieHeader);
+      const user = await validateRequest(cookieHeader ?? "");
       
       if (!user) {
         ws.close();
@@ -200,8 +201,8 @@ const app = new Elysia()
     async close(ws) {
       // Find and remove client
       for (const [userId, clients] of wsClients) {
-        if (clients.has(ws as any)) {
-          clients.delete(ws as any);
+        if (clients.has(ws as { send: (data: string) => void })) {
+          clients.delete(ws as { send: (data: string) => void });
           if (clients.size === 0) {
             wsClients.delete(userId);
           }
@@ -211,24 +212,25 @@ const app = new Elysia()
     },
     message(ws, message) {
       // Handle client messages if needed
-      console.log("WS message:", message);
+      logger.debug("WebSocket message received", { message });
     },
   })
 
   .listen(process.env.PORT ?? 4000);
 
-console.log(`🚀 Backend running at http://localhost:${app.server?.port}`);
+logger.info("Backend server started", { port: app.server?.port });
 
 // Startup recovery
 async function recoverSessions() {
   const activeSessions = await getAllActiveSessions();
-  console.log(`Recovering ${activeSessions.length} sessions...`);
+  logger.info("Starting session recovery", { count: activeSessions.length });
 
   for (const session of activeSessions) {
+    const sessionLogger = logger.child({ sessionId: session.id, username: session.tiktokUsername });
     try {
       const spotifyToken = await getSpotifyToken(session.userId);
       if (!spotifyToken) {
-        console.log(`✗ No Spotify token for ${session.tiktokUsername}, ending session`);
+        sessionLogger.warn("No Spotify token found, ending session");
         await endLiveSession(session.id);
         continue;
       }
@@ -239,23 +241,23 @@ async function recoverSessions() {
         session.userId,
         spotifyToken
       );
-      console.log(`✓ Recovered: ${session.tiktokUsername}`);
-    } catch (err) {
-      console.log(`✗ Stream ended: ${session.tiktokUsername}`);
+      sessionLogger.info("Session recovered successfully");
+    } catch {
+      sessionLogger.warn("Stream ended during recovery");
       await endLiveSession(session.id);
     }
   }
 }
 
 // Run recovery after startup
-recoverSessions().catch(console.error);
+recoverSessions().catch((err) => logger.error("Session recovery failed", { error: String(err) }));
 
 // Graceful shutdown
 process.on("SIGTERM", async () => {
-  console.log("Shutting down...");
+  logger.info("Received SIGTERM, shutting down gracefully");
 
   // Notify connected clients
-  for (const [userId, clients] of wsClients) {
+  for (const clients of wsClients.values()) {
     for (const client of clients) {
       client.send(JSON.stringify({ type: "server:shutdown" }));
     }
