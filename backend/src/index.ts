@@ -36,7 +36,19 @@ console.log(`[CORS] Allowed origin: ${frontendUrl}`);
 // Create Elysia app
 const app = new Elysia()
   .use(cors({
-    origin: frontendUrl,
+    // Allow both the frontend URL and Railway internal networking
+    origin: (request: Request) => {
+      const origin = request.headers.get('origin');
+      // Allow requests with no origin (same-origin or server-to-server)
+      if (!origin) return true;
+      // Allow configured frontend URL
+      if (origin === frontendUrl) return true;
+      // Allow Railway internal traffic
+      if (origin.endsWith('.railway.internal')) return true;
+      // Allow localhost for dev
+      if (origin.startsWith('http://localhost')) return true;
+      return false;
+    },
     credentials: true,
   }))
 

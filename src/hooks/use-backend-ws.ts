@@ -40,8 +40,9 @@ interface UseBackendWSReturn {
   removeFromQueue: (itemId: string) => Promise<void>;
 }
 
-// Use env var if available, fallback to production URL (not localhost)
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://song-flow-production.up.railway.app";
+// For production on Railway: use empty string (same-origin, via Next.js rewrite)
+// For local dev: set NEXT_PUBLIC_BACKEND_URL=http://localhost:4000
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "";
 
 export function useBackendWS(): UseBackendWSReturn {
   const wsRef = useRef<WebSocket | null>(null);
@@ -53,7 +54,15 @@ export function useBackendWS(): UseBackendWSReturn {
 
   // Connect to WebSocket
   useEffect(() => {
-    const wsUrl = BACKEND_URL.replace(/^http/, "ws") + "/ws/dashboard";
+    // Build WebSocket URL - if BACKEND_URL is empty, use relative path (same origin)
+    let wsUrl: string;
+    if (BACKEND_URL) {
+      wsUrl = BACKEND_URL.replace(/^http/, "ws") + "/ws/dashboard";
+    } else {
+      // Same-origin: use current host with ws/wss protocol
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      wsUrl = `${protocol}//${window.location.host}/ws/dashboard`;
+    }
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 

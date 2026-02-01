@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Mark better-sqlite3 as external to prevent bundling issues on Vercel
-  // In production, we use Neon PostgreSQL instead
+  // Mark better-sqlite3 as external to prevent bundling issues
   experimental: {
     serverComponentsExternalPackages: ["better-sqlite3"],
   },
@@ -18,6 +17,23 @@ const nextConfig = {
       { protocol: "https", hostname: "**.spotifycdn.com" },
       { protocol: "https", hostname: "i.scdn.co" },
     ],
+  },
+  
+  // Proxy WebSocket and backend API to Elysia backend service
+  // In production on Railway, uses internal networking
+  // In local dev, proxies to localhost:4000
+  async rewrites() {
+    const backendUrl = process.env.BACKEND_INTERNAL_URL || "http://localhost:4000";
+    return [
+      {
+        source: "/ws/:path*",
+        destination: `${backendUrl}/ws/:path*`,
+      },
+      {
+        source: "/backend/:path*",
+        destination: `${backendUrl}/:path*`,
+      },
+    ];
   },
 };
 
