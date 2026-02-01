@@ -29,10 +29,14 @@ function emitToUser(userId: string, event: unknown) {
 // Initialize TikTok service
 const tiktokService = new TikTokService(emitToUser);
 
+// Normalize FRONTEND_URL (remove trailing slash if present)
+const frontendUrl = (process.env.FRONTEND_URL ?? "http://localhost:3000").replace(/\/$/, "");
+console.log(`[CORS] Allowed origin: ${frontendUrl}`);
+
 // Create Elysia app
 const app = new Elysia()
   .use(cors({
-    origin: process.env.FRONTEND_URL ?? "http://localhost:3000",
+    origin: frontendUrl,
     credentials: true,
   }))
 
