@@ -40,8 +40,9 @@ interface UseBackendWSReturn {
   removeFromQueue: (itemId: string) => Promise<void>;
 }
 
-// For production on Railway: set NEXT_PUBLIC_BACKEND_URL to backend's public URL
-// For local dev: set NEXT_PUBLIC_BACKEND_URL=http://localhost:4000
+// Backend URL configuration:
+// - Production: NEXT_PUBLIC_BACKEND_URL=https://api.hotbun.xyz
+// - Local dev: NEXT_PUBLIC_BACKEND_URL=http://localhost:4000 (or empty for same-origin)
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "";
 const TEST_MODE = process.env.NEXT_PUBLIC_TEST_MODE === "true";
 
@@ -64,12 +65,13 @@ export function useBackendWS(): UseBackendWSReturn {
 
   // Connect to WebSocket
   useEffect(() => {
-    // Build WebSocket URL - if BACKEND_URL is empty, use relative path (same origin)
+    // Build WebSocket URL
     let wsUrl: string;
     if (BACKEND_URL) {
+      // Use configured backend URL (e.g., https://api.hotbun.xyz -> wss://api.hotbun.xyz)
       wsUrl = BACKEND_URL.replace(/^http/, "ws") + "/ws/dashboard";
     } else {
-      // Same-origin: use current host with ws/wss protocol
+      // Fallback: same-origin (for local dev without backend URL set)
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       wsUrl = `${protocol}//${window.location.host}/ws/dashboard`;
     }

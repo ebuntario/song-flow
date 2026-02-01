@@ -3,88 +3,107 @@
     "TypeScript",
     "Next.js 14",
     "React 18",
-    "NextAuth.js (Auth.js v5)",
+    "NextAuth v5 (Auth.js)",
     "Drizzle ORM",
     "Neon PostgreSQL",
-    "TailwindCSS",
+    "Tailwind CSS",
     "Radix UI",
-    "Playwright"
+    "WebSocket",
+    "Playwright",
+    "Vitest"
   ],
   "features": [
     {
-      "name": "TikTok OAuth Authentication",
-      "description": "Primary login method using TikTok OAuth. Users authenticate with their TikTok account to access the application. Redirects to /dashboard on success.",
+      "name": "Authentication",
+      "description": "OAuth authentication with Spotify and TikTok providers using NextAuth v5",
       "files": [
         "src/auth.ts",
-        "src/app/(auth)/login/page.tsx",
-        "src/app/api/auth/[...nextauth]/route.ts"
-      ]
-    },
-    {
-      "name": "Spotify OAuth Linking",
-      "description": "Secondary OAuth provider to link Spotify account for music playback. Required for enabling song requests feature. Users connect after logging in with TikTok.",
-      "files": [
-        "src/auth.ts",
-        "src/app/dashboard/page.tsx",
-        "src/lib/spotify/client.ts"
+        "src/app/api/auth/[...nextauth]/route.ts",
+        "src/lib/db/schema-pg.ts"
       ]
     },
     {
       "name": "Dashboard",
-      "description": "Main application view after authentication. Shows user profile, Spotify connection status, and live session panel. Protected route requiring authentication.",
+      "description": "Main dashboard page for authenticated users to manage live sessions",
       "files": [
-        "src/app/dashboard/page.tsx",
-        "src/components/live-session-panel.tsx",
-        "src/components/session-controls.tsx"
+        "src/app/dashboard/page.tsx"
       ]
     },
     {
       "name": "Live Session Panel",
-      "description": "Component for managing TikTok Live song request sessions. Allows starting/stopping sessions and viewing song queue.",
+      "description": "Real-time display of TikTok live session status and song request queue",
       "files": [
-        "src/components/live-session-panel.tsx",
+        "src/components/live-session-panel.tsx"
+      ]
+    },
+    {
+      "name": "Session Controls",
+      "description": "Controls to start/stop live streaming sessions and manage queue",
+      "files": [
         "src/components/session-controls.tsx"
       ]
     },
     {
-      "name": "Song Queue API",
-      "description": "API endpoint for managing song request queue during live sessions.",
+      "name": "WebSocket Hook",
+      "description": "Custom React hook for WebSocket connection to backend for real-time updates",
       "files": [
-        "src/app/api/queue/route.ts"
+        "src/hooks/use-backend-ws.ts"
       ]
     },
     {
-      "name": "Session API",
-      "description": "API endpoint for managing live streaming sessions.",
+      "name": "Toast Notifications",
+      "description": "Toast notification system using Radix UI",
       "files": [
-        "src/app/api/session/route.ts"
+        "src/hooks/use-toast.ts",
+        "src/components/ui/toast.tsx",
+        "src/components/ui/toaster.tsx"
       ]
     },
     {
-      "name": "Terms of Service Page",
-      "description": "Legal page displaying terms of service for the application.",
+      "name": "Landing Page",
+      "description": "Public landing page with sign-in options",
+      "files": [
+        "src/app/page.tsx"
+      ]
+    },
+    {
+      "name": "Terms of Service",
+      "description": "Legal terms of service page",
       "files": [
         "src/app/tos/page.tsx"
       ]
     },
     {
-      "name": "Privacy Policy Page",
-      "description": "Legal page displaying privacy policy for the application.",
+      "name": "Privacy Policy",
+      "description": "Legal privacy policy page",
       "files": [
         "src/app/policy/page.tsx"
       ]
     },
     {
       "name": "UI Components",
-      "description": "Reusable UI components built with Radix UI primitives and styled with TailwindCSS.",
+      "description": "Reusable UI components built with Radix UI primitives",
       "files": [
         "src/components/ui/button.tsx",
         "src/components/ui/card.tsx",
+        "src/components/ui/avatar.tsx",
         "src/components/ui/dialog.tsx",
-        "src/components/ui/dropdown-menu.tsx",
-        "src/components/ui/separator.tsx",
-        "src/components/ui/toast.tsx",
-        "src/components/ui/toaster.tsx"
+        "src/components/ui/dropdown-menu.tsx"
+      ]
+    },
+    {
+      "name": "Database Schema",
+      "description": "Drizzle ORM schema for PostgreSQL with users, sessions, accounts, and queue tables",
+      "files": [
+        "src/lib/db/schema-pg.ts",
+        "src/lib/db/index.ts"
+      ]
+    },
+    {
+      "name": "Structured Logging",
+      "description": "JSON-formatted structured logging for production debugging",
+      "files": [
+        "src/lib/logger.ts"
       ]
     }
   ]

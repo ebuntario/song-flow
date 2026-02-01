@@ -39,6 +39,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
+  // Cookie configuration for cross-subdomain auth (hotbun.xyz <-> api.hotbun.xyz)
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === "production" 
+        ? "__Secure-authjs.session-token" 
+        : "authjs.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        // In production, share cookie across all subdomains of hotbun.xyz
+        domain: process.env.NODE_ENV === "production" ? ".hotbun.xyz" : undefined,
+      },
+    },
+  },
   callbacks: {
     async signIn({ user, account, profile }) {
       logger.info("Auth signIn callback", { 

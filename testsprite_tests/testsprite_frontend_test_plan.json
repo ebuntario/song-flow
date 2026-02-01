@@ -1,529 +1,440 @@
 [
   {
     "id": "TC001",
-    "title": "Successful TikTok OAuth Authentication",
-    "description": "Verify that a user can authenticate using TikTok OAuth and is redirected to the dashboard upon successful login.",
+    "title": "TikTok OAuth Authentication Success",
+    "description": "Verify that users can successfully log in using TikTok OAuth and are redirected to the dashboard.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to the login page."
+        "description": "Navigate to the login page"
       },
       {
         "type": "action",
-        "description": "Click the 'Sign in with TikTok' button."
+        "description": "Click the 'Sign in with TikTok' button"
       },
       {
         "type": "action",
-        "description": "Complete TikTok OAuth authentication with valid credentials."
+        "description": "Complete TikTok OAuth flow with valid credentials"
       },
       {
         "type": "assertion",
-        "description": "Verify user is redirected to the dashboard (/dashboard) page."
+        "description": "User is redirected to the dashboard page after successful login"
       },
       {
         "type": "assertion",
-        "description": "Verify that the user profile information is displayed on the dashboard."
+        "description": "User session is established and user info is accessible in dashboard"
       }
     ]
   },
   {
     "id": "TC002",
-    "title": "Failed TikTok OAuth Authentication with Invalid Credentials",
-    "description": "Verify that login fails gracefully when invalid TikTok credentials are used.",
+    "title": "TikTok OAuth Authentication Failure Handling",
+    "description": "Verify the system handles failed TikTok OAuth login attempts gracefully.",
     "category": "error handling",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to the login page."
+        "description": "Navigate to the login page"
       },
       {
         "type": "action",
-        "description": "Click the 'Sign in with TikTok' button."
+        "description": "Click the 'Sign in with TikTok' button"
       },
       {
         "type": "action",
-        "description": "Attempt TikTok OAuth authentication using invalid credentials."
+        "description": "Abort or fail TikTok OAuth login (e.g., wrong credentials, deny access)"
       },
       {
         "type": "assertion",
-        "description": "Verify that the user remains on the login page or is shown an authentication error message."
+        "description": "Login page displays appropriate error message about authentication failure"
+      },
+      {
+        "type": "assertion",
+        "description": "User remains on the login page and is not redirected"
       }
     ]
   },
   {
     "id": "TC003",
-    "title": "Spotify OAuth Linking Success",
-    "description": "Verify that a logged-in user can successfully link their Spotify account via OAuth and see the connection reflected in the dashboard.",
+    "title": "Spotify OAuth Account Linking Success",
+    "description": "Verify that authenticated users can link their Spotify accounts via OAuth from the dashboard.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Login using TikTok OAuth and navigate to the dashboard."
+        "description": "Log in successfully via TikTok OAuth and navigate to dashboard"
       },
       {
         "type": "action",
-        "description": "Click 'Connect Spotify Account' button."
+        "description": "Click on 'Connect Spotify Account' button"
       },
       {
         "type": "action",
-        "description": "Complete Spotify OAuth authentication with valid Spotify credentials."
+        "description": "Complete Spotify OAuth flow with a valid Spotify account"
       },
       {
         "type": "assertion",
-        "description": "Verify that the dashboard displays Spotify connection status as connected."
+        "description": "Dashboard reflects Spotify connection status as 'Connected'"
       },
       {
         "type": "assertion",
-        "description": "Verify that Spotify playback controls become available on the dashboard."
+        "description": "User is able to control Spotify playback via dashboard controls"
       }
     ]
   },
   {
     "id": "TC004",
     "title": "Spotify OAuth Linking Failure Handling",
-    "description": "Verify that the system handles failed Spotify OAuth linking attempts gracefully with appropriate error messaging.",
+    "description": "Verify handling of failed Spotify OAuth linking attempts or permission denials.",
     "category": "error handling",
     "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Login using TikTok OAuth and navigate to the dashboard."
+        "description": "From logged in dashboard, initiate Spotify OAuth linking"
       },
       {
         "type": "action",
-        "description": "Click 'Connect Spotify Account' button."
-      },
-      {
-        "type": "action",
-        "description": "Attempt to authenticate with Spotify OAuth and cancel or input invalid credentials."
+        "description": "Abort or deny permission in Spotify OAuth dialog"
       },
       {
         "type": "assertion",
-        "description": "Verify that the dashboard remains on Spotify connection page or shows an appropriate error message."
+        "description": "Dashboard shows error message indicating Spotify linking failed or cancelled"
       },
       {
         "type": "assertion",
-        "description": "Verify that Spotify playback controls are not enabled."
+        "description": "Spotify connection status remains 'Not Connected'"
       }
     ]
   },
   {
     "id": "TC005",
-    "title": "Start and Stop Live Session",
-    "description": "Verify that the user can start and stop a TikTok Live song request session from the Live Session Panel.",
+    "title": "Start and Stop Live Session via Dashboard",
+    "description": "Verify that streamers can start and stop a live TikTok song request session from the dashboard.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Login with TikTok OAuth and ensure Spotify account is connected."
+        "description": "Log in and connect Spotify account"
       },
       {
         "type": "action",
-        "description": "Navigate to the Live Session Panel in the dashboard."
+        "description": "Navigate to live session panel on dashboard"
       },
       {
         "type": "action",
-        "description": "Click to start a new live session."
+        "description": "Click 'Start Session' button"
       },
       {
         "type": "assertion",
-        "description": "Verify that the live session status indicates active."
+        "description": "Live session state changes to 'Active' and dashboard shows connected to TikTok Live chat via WebSocket"
       },
       {
         "type": "action",
-        "description": "Click to stop the live session."
+        "description": "Click 'Stop Session' button"
       },
       {
         "type": "assertion",
-        "description": "Verify that the live session status indicates inactive or stopped."
+        "description": "Live session stops, WebSocket disconnects, and UI updates to reflect session ended"
       }
     ]
   },
   {
     "id": "TC006",
-    "title": "WebSocket Connection for Real-Time TikTok Live Chat",
-    "description": "Verify that starting a live session establishes a reliable WebSocket connection to listen to TikTok Live chat in real-time.",
+    "title": "Valid Song Request Command Parsing and Queueing",
+    "description": "Verify the system properly parses a valid song request command from TikTok Live chat and queues the song on Spotify.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Start a live session from the dashboard."
+        "description": "Start live session and ensure Spotify playback device is active"
+      },
+      {
+        "type": "action",
+        "description": "Simulate sending a valid song request command in TikTok Live chat, e.g., '!lagu Shape of You'"
       },
       {
         "type": "assertion",
-        "description": "Verify that a WebSocket connection is opened."
+        "description": "System parses command and searches Spotify for the requested track"
       },
       {
         "type": "assertion",
-        "description": "Simulate receiving song request commands from TikTok Live chat and verify that they are received in real-time."
+        "description": "Track is added to Spotify playback queue"
+      },
+      {
+        "type": "assertion",
+        "description": "Dashboard updates in real-time to show the new song in the queue"
       }
     ]
   },
   {
     "id": "TC007",
-    "title": "Song Request Command Parsing and Queuing",
-    "description": "Verify that song request commands in TikTok Live chat are parsed correctly, valid Spotify tracks are searched and added to the queue.",
-    "category": "functional",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Start a live session with Spotify connected."
-      },
-      {
-        "type": "action",
-        "description": "Send a valid song request command (e.g., '!lagu Shape of You') through the simulated TikTok Live chat."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that the command is parsed successfully."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that the Spotify API is called to search the requested song."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that the found song is added to the queue and reflected in the dashboard."
-      }
-    ]
-  },
-  {
-    "id": "TC008",
     "title": "Invalid Song Request Command Handling",
-    "description": "Verify that invalid or malformed song request commands do not crash the system and generate appropriate user feedback.",
+    "description": "Verify that invalid or malformed song request commands do not affect the queue and proper user feedback occurs.",
     "category": "error handling",
     "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Start a live session with Spotify connected."
+        "description": "Start live session and connect Spotify playback"
       },
       {
         "type": "action",
-        "description": "Send an invalid or malformed song request command (e.g., '!song' with no title)."
+        "description": "Simulate sending invalid or unrecognized commands in TikTok Live chat, e.g., '!song123 ??'"
       },
       {
         "type": "assertion",
-        "description": "Verify that the system ignores or rejects the command gracefully."
+        "description": "Commands are ignored or rejected without queuing any song"
       },
       {
         "type": "assertion",
-        "description": "Verify that an error message or feedback is sent back to the user via chat or dashboard."
+        "description": "User feedback message is sent or logged indicating invalid request format"
+      },
+      {
+        "type": "assertion",
+        "description": "Dashboard song queue remains unchanged"
       }
     ]
   },
   {
-    "id": "TC009",
-    "title": "Rate Limiting on Song Requests per User",
-    "description": "Verify that the system enforces rate limiting per user to prevent excessive song requests and provides user feedback when limit is reached.",
-    "category": "functional",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Start a live session with Spotify connected."
-      },
-      {
-        "type": "action",
-        "description": "Send song request commands rapidly from the same user exceeding the rate limit."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that requests beyond the allowed limit are blocked."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that the user receives a rate limit warning message."
-      }
-    ]
-  },
-  {
-    "id": "TC010",
-    "title": "Content Filtering - Explicit Songs Toggle",
-    "description": "Verify that when explicit content filtering is enabled, requests for explicit songs are blocked from queuing.",
-    "category": "functional",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Enable explicit content filtering in dashboard settings."
-      },
-      {
-        "type": "action",
-        "description": "Start a live session with Spotify connected."
-      },
-      {
-        "type": "action",
-        "description": "Send a song request command for an explicit content track."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that the explicit song is not added to the queue."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that the user is notified that explicit content is blocked."
-      }
-    ]
-  },
-  {
-    "id": "TC011",
-    "title": "Content Filtering - Banned Words in Song Titles",
-    "description": "Verify that song requests containing banned words in titles or user requests are filtered and blocked.",
-    "category": "functional",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Add specific banned words to the filtering list in settings."
-      },
-      {
-        "type": "action",
-        "description": "Start a live session with Spotify connected."
-      },
-      {
-        "type": "action",
-        "description": "Send a song request command containing a banned word."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that the song is not queued."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that the user receives a notification that content was filtered."
-      }
-    ]
-  },
-  {
-    "id": "TC012",
-    "title": "Content Filtering - User Ban Enforcement",
-    "description": "Verify that requests from banned users are blocked from being queued or processed.",
-    "category": "functional",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Add a user to the banned users list."
-      },
-      {
-        "type": "action",
-        "description": "Start a live session with Spotify connected."
-      },
-      {
-        "type": "action",
-        "description": "Send a song request command from the banned user."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that the request is rejected and not added to the queue."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that no other users see the banned user's requests."
-      }
-    ]
-  },
-  {
-    "id": "TC013",
-    "title": "Dashboard Real-Time Updates for Now Playing and Queue",
-    "description": "Verify that the dashboard UI updates now playing track and queue list in real-time with less than 2 seconds latency after queue changes.",
-    "category": "functional",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Start a live session and connect Spotify playback."
-      },
-      {
-        "type": "action",
-        "description": "Add multiple song requests via simulated chat."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that the dashboard updates the 'now playing' track as playback changes."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that the queue list updates in real-time within 2 seconds of the request additions."
-      }
-    ]
-  },
-  {
-    "id": "TC014",
-    "title": "Overlay View Shows Real-Time Now Playing and Upcoming Songs",
-    "description": "Verify that the overlay view displays the current and upcoming songs and updates them in real-time.",
-    "category": "functional",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Activate overlay view during a live session with Spotify connected."
-      },
-      {
-        "type": "action",
-        "description": "Queue several songs through TikTok chat requests."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that overlay updates now playing information immediately."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that upcoming song queue is displayed and updated dynamically."
-      }
-    ]
-  },
-  {
-    "id": "TC015",
-    "title": "Overlay Customization Settings Apply Immediately",
-    "description": "Verify that changes to overlay themes and settings are applied in real-time without needing session restart.",
-    "category": "functional",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Open overlay customization settings from dashboard."
-      },
-      {
-        "type": "action",
-        "description": "Change overlay theme or display options."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that the overlay view reflects the changes immediately."
-      }
-    ]
-  },
-  {
-    "id": "TC016",
-    "title": "Playback Controls from Dashboard - Skip Track",
-    "description": "Verify that the streamer can skip the currently playing track from the dashboard and playback updates accordingly.",
-    "category": "functional",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Start a live session with multiple songs queued and Spotify connected."
-      },
-      {
-        "type": "action",
-        "description": "Click 'Skip' button on the dashboard playback controls."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that the current track is skipped on Spotify playback."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that the dashboard updates now playing track accordingly."
-      }
-    ]
-  },
-  {
-    "id": "TC017",
-    "title": "Playback Controls from Dashboard - Reorder Queue",
-    "description": "Verify that the streamer can reorder songs in the queue and the new order is reflected in playback sequence and dashboard UI.",
-    "category": "functional",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Start a live session with multiple songs queued in the dashboard."
-      },
-      {
-        "type": "action",
-        "description": "Reorder the queue by dragging and dropping or using controls."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that the queue order changes accordingly in the dashboard UI."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that the next track played respects the new queue order."
-      }
-    ]
-  },
-  {
-    "id": "TC018",
-    "title": "Session Analytics Data Accuracy",
-    "description": "Verify that analytics data such as total requests, top requesters, and engagement metrics are correctly recorded and displayed post-session.",
-    "category": "functional",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Conduct a live session with multiple song requests from various users."
-      },
-      {
-        "type": "action",
-        "description": "End the live session."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that analytics data aggregates correct request counts."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that top requesters and engagement metrics are accurately listed."
-      }
-    ]
-  },
-  {
-    "id": "TC019",
-    "title": "Security - Token Encryption and Role-based Access",
-    "description": "Verify that sensitive tokens are stored encrypted and role-based access control prevents unauthorized access to protected routes and APIs.",
+    "id": "TC008",
+    "title": "Rate Limiting Enforcement on Song Requests",
+    "description": "Verify that the system enforces rate limiting on song requests from the same user to prevent spam.",
     "category": "security",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Login as a normal user and access dashboard pages."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that the user cannot access admin-only pages or API endpoints."
+        "description": "Start live session with Spotify connected"
       },
       {
         "type": "action",
-        "description": "Inspect database or token storage for encryption of sensitive OAuth tokens."
+        "description": "Simulate a user sending song requests exceeding rate limit threshold rapidly"
       },
       {
         "type": "assertion",
-        "description": "Verify tokens are stored encrypted and not in plain text."
+        "description": "Excess requests beyond allowed rate are rejected or ignored"
+      },
+      {
+        "type": "assertion",
+        "description": "User receives feedback message about rate limit enforcement"
+      },
+      {
+        "type": "assertion",
+        "description": "Dashboard song queue only includes allowed requests within rate limit"
       }
     ]
   },
   {
-    "id": "TC020",
-    "title": "API Endpoints - Successful Responses and Error Handling",
-    "description": "Verify that session, queue, Spotify action, analytics, and settings API endpoints respond correctly to valid requests and handle invalid requests with proper error messages.",
+    "id": "TC009",
+    "title": "Explicit Content and Banned Words Filtering",
+    "description": "Verify that the system filters out song requests containing explicit content or banned words when filtering is enabled.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Enable explicit content filtering and banned words filter in the dashboard settings"
+      },
+      {
+        "type": "action",
+        "description": "Start a live session"
+      },
+      {
+        "type": "action",
+        "description": "Simulate sending a song request command with an explicit or banned word title"
+      },
+      {
+        "type": "assertion",
+        "description": "Song request is rejected and not added to the Spotify queue"
+      },
+      {
+        "type": "assertion",
+        "description": "User receives feedback that the request is blocked due to content filtering"
+      },
+      {
+        "type": "assertion",
+        "description": "Dashboard queue does not show filtered songs"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "User Ban Prevents Song Requests",
+    "description": "Verify that users banned from session are unable to submit song requests.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Add a user to the banned list via dashboard settings"
+      },
+      {
+        "type": "action",
+        "description": "Start live session"
+      },
+      {
+        "type": "action",
+        "description": "Simulate the banned user sending a valid song request command"
+      },
+      {
+        "type": "assertion",
+        "description": "Request is rejected and not queued on Spotify"
+      },
+      {
+        "type": "assertion",
+        "description": "Banned user receives feedback indicating ban restriction"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Dashboard Real-Time Updates Under 2 Seconds Latency",
+    "description": "Verify that the dashboard updates now playing, queue, and metrics within 2 seconds after song queue changes or playback events.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Start live session and connect Spotify"
+      },
+      {
+        "type": "action",
+        "description": "Simulate adding songs via valid requests"
+      },
+      {
+        "type": "assertion",
+        "description": "Dashboard UI updates showing new now playing and queue changes within 2 seconds"
+      },
+      {
+        "type": "action",
+        "description": "Simulate skip or reorder actions via dashboard controls"
+      },
+      {
+        "type": "assertion",
+        "description": "Dashboard reflects changes with live metrics and queue updates within 2 seconds"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Overlay Customization and Live Update",
+    "description": "Verify that streamers can customize overlay themes and that changes reflect immediately in the broadcasting overlay.",
     "category": "functional",
     "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Send valid requests to session, queue, and Spotify action APIs."
-      },
-      {
-        "type": "assertion",
-        "description": "Verify that responses contain expected data and success status codes."
+        "description": "Log in and start a live session"
       },
       {
         "type": "action",
-        "description": "Send invalid or malformed requests to the same APIs."
+        "description": "Navigate to overlay customization settings"
+      },
+      {
+        "type": "action",
+        "description": "Change theme or display options"
       },
       {
         "type": "assertion",
-        "description": "Verify that responses include appropriate error codes and descriptive error messages."
+        "description": "Overlay view updates immediately reflecting the new customization"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Session Analytics Data Accuracy and Availability",
+    "description": "Verify that session analytics such as total song requests, top requesters, and engagement metrics are accurately recorded and accessible post session.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Conduct a live session with multiple song requests from different users"
+      },
+      {
+        "type": "action",
+        "description": "End the session"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to analytics section in dashboard"
+      },
+      {
+        "type": "assertion",
+        "description": "Displayed analytics reflect accurate counts of requests, user participation, and engagement metrics"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Security Protocols Enforcement",
+    "description": "Verify that sensitive user tokens are encrypted in storage, all communications use HTTPS/WSS, and role-based access control prevents unauthorized access.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Inspect storage for token encryption"
+      },
+      {
+        "type": "assertion",
+        "description": "All sensitive tokens such as OAuth tokens are stored encrypted"
+      },
+      {
+        "type": "action",
+        "description": "Access all web endpoints and WebSocket connections"
+      },
+      {
+        "type": "assertion",
+        "description": "All communications use HTTPS/WSS protocols"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to access protected dashboard or API without proper authentication"
+      },
+      {
+        "type": "assertion",
+        "description": "Access is denied with proper error responses"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "API Endpoint Functional and Error Handling Tests",
+    "description": "Verify that API endpoints for session, queue, requests, and analytics respond correctly to valid and invalid requests with proper error handling.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Send valid requests to session API to start, stop and query sessions"
+      },
+      {
+        "type": "assertion",
+        "description": "API returns expected success response with correct session data"
+      },
+      {
+        "type": "action",
+        "description": "Send invalid or malformed payloads to queue API"
+      },
+      {
+        "type": "assertion",
+        "description": "API returns meaningful error codes and messages"
+      },
+      {
+        "type": "action",
+        "description": "Make unauthorized API requests without valid tokens"
+      },
+      {
+        "type": "assertion",
+        "description": "API returns 401 Unauthorized or equivalent"
       }
     ]
   }
