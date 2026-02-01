@@ -40,7 +40,8 @@ interface UseBackendWSReturn {
   removeFromQueue: (itemId: string) => Promise<void>;
 }
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:4000";
+// Use env var if available, fallback to production URL (not localhost)
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://song-flow-production.up.railway.app";
 
 export function useBackendWS(): UseBackendWSReturn {
   const wsRef = useRef<WebSocket | null>(null);
