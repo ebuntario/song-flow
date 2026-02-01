@@ -1,14 +1,18 @@
 {
   "status": "commited",
-  "type": "backend",
+  "type": "frontend",
   "scope": "codebase",
-  "localEndpoint": "http://localhost:3000",
-  "backendAuthType": "public",
+  "localEndpoint": "https://song-flow-rho.vercel.app",
   "executionArgs": {
     "projectName": "song-flow",
     "projectPath": "/Users/ethanbuntario/Dev/song-flow",
-    "testIds": [],
-    "additionalInstruction": "The app has a test auth bypass at POST /api/__test__/login when TEST_MODE=true. Use this to authenticate for E2E tests.",
+    "testIds": [
+      "TC001",
+      "TC002",
+      "TC003",
+      "TC004"
+    ],
+    "additionalInstruction": "Test against production URL https://song-flow-rho.vercel.app instead of localhost. Focus on testing the TikTok and Spotify OAuth flows which are difficult to test locally. Test cases TC001-TC004 are the primary focus for OAuth testing.",
     "envs": {
       "API_KEY": "sk-user-fXTpLEEfbbnTVGFeOlCVpP3uIWVaQGPEGTjBbhohsZxccjnYdrEkk7OoeSLQvfnV6irMemRvCIB7L6E75r15JPGWjbQXNmefGQtWluh_wIcpyWnKK6EkJbbOO41zRKzvg9k"
     }

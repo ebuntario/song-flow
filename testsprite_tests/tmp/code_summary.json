@@ -1,158 +1,91 @@
 {
   "tech_stack": [
     "TypeScript",
-    "Next.js 14 (App Router)",
-    "NextAuth.js v5",
+    "Next.js 14",
+    "React 18",
+    "NextAuth.js (Auth.js v5)",
     "Drizzle ORM",
-    "SQLite (frontend)",
-    "PostgreSQL/Neon (backend)",
-    "Bun + Elysia (backend)",
-    "TikTok Live Connector",
-    "Spotify API",
-    "Tailwind CSS",
-    "shadcn/ui"
+    "Neon PostgreSQL",
+    "TailwindCSS",
+    "Radix UI",
+    "Playwright"
   ],
   "features": [
     {
-      "name": "User Authentication",
-      "description": "OAuth-based authentication with Spotify, session management via NextAuth.js",
+      "name": "TikTok OAuth Authentication",
+      "description": "Primary login method using TikTok OAuth. Users authenticate with their TikTok account to access the application. Redirects to /dashboard on success.",
       "files": [
         "src/auth.ts",
-        "src/app/api/auth/[...nextauth]/route.ts",
-        "src/app/login/page.tsx"
-      ],
-      "api_doc": {
-        "openapi": "3.0.0",
-        "paths": {
-          "/api/auth/signin": {
-            "get": {
-              "summary": "OAuth sign-in redirect",
-              "responses": { "302": { "description": "Redirect to OAuth provider" } }
-            }
-          },
-          "/api/auth/signout": {
-            "post": {
-              "summary": "Sign out user",
-              "responses": { "200": { "description": "Session ended" } }
-            }
-          }
-        }
-      }
+        "src/app/(auth)/login/page.tsx",
+        "src/app/api/auth/[...nextauth]/route.ts"
+      ]
+    },
+    {
+      "name": "Spotify OAuth Linking",
+      "description": "Secondary OAuth provider to link Spotify account for music playback. Required for enabling song requests feature. Users connect after logging in with TikTok.",
+      "files": [
+        "src/auth.ts",
+        "src/app/dashboard/page.tsx",
+        "src/lib/spotify/client.ts"
+      ]
     },
     {
       "name": "Dashboard",
-      "description": "Main dashboard showing user info, Spotify connection status, live session controls, and song queue",
+      "description": "Main application view after authentication. Shows user profile, Spotify connection status, and live session panel. Protected route requiring authentication.",
       "files": [
         "src/app/dashboard/page.tsx",
-        "src/components/live-session-panel.tsx"
-      ],
-      "api_doc": {}
-    },
-    {
-      "name": "Live Session Management",
-      "description": "Start/stop TikTok live listening sessions via backend WebSocket",
-      "files": [
-        "src/hooks/use-backend-ws.ts",
         "src/components/live-session-panel.tsx",
-        "backend/src/index.ts",
-        "backend/src/services/tiktok.ts"
-      ],
-      "api_doc": {
-        "openapi": "3.0.0",
-        "paths": {
-          "/session": {
-            "post": {
-              "summary": "Start a live session",
-              "responses": {
-                "200": { "description": "Session started successfully" },
-                "401": { "description": "Unauthorized" },
-                "409": { "description": "Session already active" }
-              }
-            },
-            "delete": {
-              "summary": "End current live session",
-              "responses": {
-                "200": { "description": "Session ended" },
-                "401": { "description": "Unauthorized" },
-                "404": { "description": "No active session" }
-              }
-            }
-          }
-        }
-      }
+        "src/components/session-controls.tsx"
+      ]
     },
     {
-      "name": "Song Queue",
-      "description": "Real-time song request queue with WebSocket updates",
+      "name": "Live Session Panel",
+      "description": "Component for managing TikTok Live song request sessions. Allows starting/stopping sessions and viewing song queue.",
       "files": [
-        "src/hooks/use-backend-ws.ts",
         "src/components/live-session-panel.tsx",
-        "backend/src/db/queries.ts"
-      ],
-      "api_doc": {
-        "openapi": "3.0.0",
-        "paths": {
-          "/queue": {
-            "get": {
-              "summary": "Get current queue",
-              "responses": {
-                "200": { "description": "Queue items returned" },
-                "401": { "description": "Unauthorized" }
-              }
-            }
-          },
-          "/queue/{id}": {
-            "delete": {
-              "summary": "Remove item from queue",
-              "parameters": [
-                { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
-              ],
-              "responses": {
-                "200": { "description": "Item removed" },
-                "401": { "description": "Unauthorized" }
-              }
-            }
-          }
-        }
-      }
+        "src/components/session-controls.tsx"
+      ]
     },
     {
-      "name": "Spotify Integration",
-      "description": "Search tracks and manage Spotify queue",
+      "name": "Song Queue API",
+      "description": "API endpoint for managing song request queue during live sessions.",
       "files": [
-        "src/lib/spotify/client.ts",
-        "backend/src/services/spotify.ts"
-      ],
-      "api_doc": {}
+        "src/app/api/queue/route.ts"
+      ]
     },
     {
-      "name": "TikTok Command Parser",
-      "description": "Parse chat commands (!play, !revoke, !skip) from TikTok live stream",
+      "name": "Session API",
+      "description": "API endpoint for managing live streaming sessions.",
       "files": [
-        "src/lib/tiktok/parser.ts",
-        "backend/src/lib/parser.ts"
-      ],
-      "api_doc": {}
+        "src/app/api/session/route.ts"
+      ]
     },
     {
-      "name": "Health Check",
-      "description": "Backend health endpoint for monitoring",
+      "name": "Terms of Service Page",
+      "description": "Legal page displaying terms of service for the application.",
       "files": [
-        "backend/src/index.ts"
-      ],
-      "api_doc": {
-        "openapi": "3.0.0",
-        "paths": {
-          "/health": {
-            "get": {
-              "summary": "Health check",
-              "responses": {
-                "200": { "description": "Service healthy", "content": { "application/json": { "schema": { "type": "object", "properties": { "status": { "type": "string" }, "activeConnections": { "type": "integer" } } } } } }
-              }
-            }
-          }
-        }
-      }
+        "src/app/tos/page.tsx"
+      ]
+    },
+    {
+      "name": "Privacy Policy Page",
+      "description": "Legal page displaying privacy policy for the application.",
+      "files": [
+        "src/app/policy/page.tsx"
+      ]
+    },
+    {
+      "name": "UI Components",
+      "description": "Reusable UI components built with Radix UI primitives and styled with TailwindCSS.",
+      "files": [
+        "src/components/ui/button.tsx",
+        "src/components/ui/card.tsx",
+        "src/components/ui/dialog.tsx",
+        "src/components/ui/dropdown-menu.tsx",
+        "src/components/ui/separator.tsx",
+        "src/components/ui/toast.tsx",
+        "src/components/ui/toaster.tsx"
+      ]
     }
   ]
 }
