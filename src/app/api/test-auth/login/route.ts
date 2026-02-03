@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { users, accounts, sessions } from "@/lib/db/schema";
+import { logger } from "@/lib/logger";
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 
@@ -89,7 +90,7 @@ export async function POST(request: Request) {
 
     return response;
   } catch (error) {
-    console.error("Test login error:", error);
+    logger.error("Test login error", { component: "test-auth", error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to create test session" },
       { status: 500 }
@@ -116,7 +117,7 @@ export async function DELETE() {
 
     return NextResponse.json({ success: true, message: "Test sessions cleaned up" });
   } catch (error) {
-    console.error("Test cleanup error:", error);
+    logger.error("Test cleanup error", { component: "test-auth", error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to clean up test sessions" },
       { status: 500 }

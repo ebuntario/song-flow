@@ -3,6 +3,7 @@ import { getSpotifyToken, getCurrentlyPlaying } from "@/lib/spotify/client";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { accounts } from "@/lib/db/schema";
+import { logger } from "@/lib/logger";
 import { and, eq } from "drizzle-orm";
 
 export async function GET() {
@@ -18,7 +19,8 @@ export async function GET() {
     .where(and(eq(accounts.userId, session.user.id), eq(accounts.provider, "spotify")))
     .limit(1);
 
-  console.log("[Debug] Spotify account state:", {
+  logger.debug("Spotify account state", {
+    component: "test-spotify",
     hasAccount: !!account,
     hasAccessToken: !!account?.access_token,
     hasRefreshToken: !!account?.refresh_token,
@@ -30,7 +32,8 @@ export async function GET() {
 
   const token = await getSpotifyToken(session.user.id);
   
-  console.log("[Debug] Token after getSpotifyToken:", {
+  logger.debug("Token after getSpotifyToken", {
+    component: "test-spotify",
     hasToken: !!token,
     tokenLength: token?.length,
   });
@@ -43,7 +46,7 @@ export async function GET() {
     const data = await getCurrentlyPlaying(token);
     return NextResponse.json(data ?? { item: null, is_playing: false });
   } catch (err) {
-    console.error("[Debug] getCurrentlyPlaying error:", err);
+    logger.error("getCurrentlyPlaying error", { component: "test-spotify", error: err instanceof Error ? err.message : String(err) });
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Failed to get current track" },
       { status: 500 }

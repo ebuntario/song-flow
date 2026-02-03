@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { liveSessions, queueItems } from "@/lib/db/schema";
+import { logger } from "@/lib/logger";
 import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
@@ -42,7 +43,7 @@ export async function GET() {
       queue,
     });
   } catch (error) {
-    console.error("Error fetching session:", error);
+    logger.error("Error fetching session", { component: "session-api", error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch session" },
       { status: 500 }
@@ -110,7 +111,7 @@ export async function POST(request: Request) {
       session: newSession,
     });
   } catch (error) {
-    console.error("Error starting session:", error);
+    logger.error("Error starting session", { component: "session-api", error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to start session" },
       { status: 500 }
@@ -161,7 +162,7 @@ export async function DELETE() {
       message: "Session ended",
     });
   } catch (error) {
-    console.error("Error stopping session:", error);
+    logger.error("Error stopping session", { component: "session-api", error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to stop session" },
       { status: 500 }

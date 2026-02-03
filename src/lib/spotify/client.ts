@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { accounts } from "@/lib/db/schema";
+import { logger } from "@/lib/logger";
 import { and, eq } from "drizzle-orm";
 
 const API = "https://api.spotify.com/v1";
@@ -32,7 +33,7 @@ async function refreshSpotifyToken(userId: string, refreshToken: string): Promis
   const clientSecret = process.env.AUTH_SPOTIFY_SECRET;
 
   if (!clientId || !clientSecret) {
-    console.error("[Spotify] Credentials not configured for token refresh");
+    logger.error("Spotify credentials not configured for token refresh", { component: "spotify" });
     return null;
   }
 
@@ -50,7 +51,7 @@ async function refreshSpotifyToken(userId: string, refreshToken: string): Promis
     });
 
     if (!response.ok) {
-      console.error("[Spotify] Token refresh failed:", response.status);
+      logger.error("Spotify token refresh failed", { component: "spotify", status: response.status });
       return null;
     }
 
@@ -71,10 +72,10 @@ async function refreshSpotifyToken(userId: string, refreshToken: string): Promis
         )
       );
 
-    console.log("[Spotify] Token refreshed successfully");
+    logger.info("Spotify token refreshed successfully", { component: "spotify" });
     return data.access_token;
   } catch (err) {
-    console.error("[Spotify] Error refreshing token:", err);
+    logger.error("Error refreshing Spotify token", { component: "spotify", error: err instanceof Error ? err.message : String(err) });
     return null;
   }
 }
@@ -111,7 +112,8 @@ export async function getCurrentlyPlaying(token: string) {
   if (res.status === 204) return null;
   if (!res.ok) {
     const errorBody = await res.text();
-    console.error("[Spotify] getCurrentlyPlaying error:", {
+    logger.error("Spotify getCurrentlyPlaying error", {
+      component: "spotify",
       status: res.status,
       statusText: res.statusText,
       body: errorBody,

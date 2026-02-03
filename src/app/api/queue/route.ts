@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { liveSessions, queueItems } from "@/lib/db/schema";
+import { logger } from "@/lib/logger";
 import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
@@ -48,7 +49,7 @@ export async function GET() {
       sessionId: activeSession.id,
     });
   } catch (error) {
-    console.error("Error fetching queue:", error);
+    logger.error("Error fetching queue", { component: "queue-api", error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to fetch queue" },
       { status: 500 }
@@ -105,7 +106,7 @@ export async function DELETE(request: Request) {
       message: "Item removed from queue",
     });
   } catch (error) {
-    console.error("Error removing from queue:", error);
+    logger.error("Error removing from queue", { component: "queue-api", error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: "Failed to remove from queue" },
       { status: 500 }
