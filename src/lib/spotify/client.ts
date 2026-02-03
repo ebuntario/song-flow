@@ -109,6 +109,14 @@ export async function getCurrentlyPlaying(token: string) {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (res.status === 204) return null;
-  if (!res.ok) throw new Error(`Current playing failed: ${res.status}`);
+  if (!res.ok) {
+    const errorBody = await res.text();
+    console.error("[Spotify] getCurrentlyPlaying error:", {
+      status: res.status,
+      statusText: res.statusText,
+      body: errorBody,
+    });
+    throw new Error(`Current playing failed: ${res.status} - ${errorBody}`);
+  }
   return res.json();
 }
