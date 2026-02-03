@@ -1,6 +1,7 @@
 import { db } from "../db/client";
 import { accounts } from "../db/schema";
 import { eq, and } from "drizzle-orm";
+import { logger } from "../lib/logger";
 
 const SPOTIFY_API_BASE = "https://api.spotify.com/v1";
 const SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token";
@@ -50,7 +51,7 @@ async function refreshSpotifyToken(userId: string, refreshToken: string): Promis
   const clientSecret = process.env.AUTH_SPOTIFY_SECRET;
 
   if (!clientId || !clientSecret) {
-    console.error("Spotify credentials not configured");
+    logger.error("Spotify credentials not configured", { userId });
     return null;
   }
 
@@ -68,7 +69,7 @@ async function refreshSpotifyToken(userId: string, refreshToken: string): Promis
     });
 
     if (!response.ok) {
-      console.error("Failed to refresh Spotify token:", response.status);
+      logger.error("Failed to refresh Spotify token", { userId, status: response.status });
       return null;
     }
 
@@ -91,7 +92,7 @@ async function refreshSpotifyToken(userId: string, refreshToken: string): Promis
 
     return data.access_token;
   } catch (err) {
-    console.error("Error refreshing Spotify token:", err);
+    logger.error("Error refreshing Spotify token", { userId, error: String(err) });
     return null;
   }
 }
@@ -114,7 +115,7 @@ export async function searchSpotifyTrack(
     );
 
     if (!response.ok) {
-      console.error("Spotify search failed:", response.status);
+      logger.error("Spotify search failed", { query, status: response.status });
       return null;
     }
 
@@ -127,7 +128,7 @@ interface SpotifySearchResponse {
     const data = await response.json() as SpotifySearchResponse;
     return data.tracks?.items?.[0] ?? null;
   } catch (err) {
-    console.error("Error searching Spotify:", err);
+    logger.error("Error searching Spotify", { query, error: String(err) });
     return null;
   }
 }
@@ -152,7 +153,7 @@ export async function addToSpotifyQueue(
 
     return response.ok;
   } catch (err) {
-    console.error("Error adding to Spotify queue:", err);
+    logger.error("Error adding to Spotify queue", { trackUri, error: String(err) });
     return false;
   }
 }
