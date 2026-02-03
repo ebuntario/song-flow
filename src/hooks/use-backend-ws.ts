@@ -35,7 +35,7 @@ interface UseBackendWSReturn {
   isConnected: boolean;
   isConnecting: boolean;
   error: string | null;
-  startSession: () => Promise<void>;
+  startSession: (tiktokUsername: string) => Promise<void>;
   endSession: () => Promise<void>;
   removeFromQueue: (itemId: string) => Promise<void>;
 }
@@ -130,7 +130,7 @@ export function useBackendWS(): UseBackendWSReturn {
   }, []);
 
   // Start session
-  const startSession = useCallback(async () => {
+  const startSession = useCallback(async (tiktokUsername: string) => {
     setIsConnecting(true);
     setError(null);
 
@@ -138,6 +138,8 @@ export function useBackendWS(): UseBackendWSReturn {
       const res = await fetch(`${BACKEND_URL}/session`, {
         method: "POST",
         credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tiktokUsername }),
       });
 
       const data = await res.json();

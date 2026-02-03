@@ -72,7 +72,7 @@ const app = new Elysia()
   }))
 
   // Start session
-  .post("/session", async ({ cookie, set }) => {
+  .post("/session", async ({ cookie, set, body }) => {
     const cookieHeader = Object.entries(cookie)
       .map(([name, c]) => `${name}=${c.value}`)
       .join("; ");
@@ -97,8 +97,14 @@ const app = new Elysia()
       return { error: "Spotify not connected" };
     }
 
-    // For now, derive username from user name (TODO: get from TikTok OAuth)
-    const tiktokUsername = user.name?.replace(/\s+/g, "_").toLowerCase() ?? "unknown";
+    // Get TikTok username from request body
+    const requestBody = body as { tiktokUsername?: string } | undefined;
+    const tiktokUsername = requestBody?.tiktokUsername;
+
+    if (!tiktokUsername) {
+      set.status = 400;
+      return { error: "TikTok username is required" };
+    }
 
     // Create session
     const session = await createLiveSession(user.id, tiktokUsername);
