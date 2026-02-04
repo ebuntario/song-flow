@@ -10,6 +10,7 @@ import {
   endLiveSession,
   getQueueForSession,
   skipQueueItem,
+  getUserTiktokUsername,
 } from "./db/queries";
 import { logger } from "./lib/logger";
 
@@ -72,7 +73,7 @@ const app = new Elysia()
   }))
 
   // Start session
-  .post("/session", async ({ cookie, set, body }) => {
+  .post("/session", async ({ cookie, set }) => {
     const cookieHeader = Object.entries(cookie)
       .map(([name, c]) => `${name}=${c.value}`)
       .join("; ");
@@ -97,13 +98,12 @@ const app = new Elysia()
       return { error: "Spotify not connected" };
     }
 
-    // Get TikTok username from request body
-    const requestBody = body as { tiktokUsername?: string } | undefined;
-    const tiktokUsername = requestBody?.tiktokUsername;
+    // Get TikTok username from user's profile (stored from OAuth)
+    const tiktokUsername = await getUserTiktokUsername(user.id);
 
     if (!tiktokUsername) {
       set.status = 400;
-      return { error: "TikTok username is required" };
+      return { error: "TikTok username not found. Please re-login via TikTok." };
     }
 
     // Create session

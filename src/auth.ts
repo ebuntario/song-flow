@@ -63,11 +63,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         userId: user?.id,
         hasProfile: !!profile,
       });
+      
+      // Store TikTok username from profile
+      if (account?.provider === "tiktok" && profile && user?.id) {
+        const tiktokProfile = profile as { data?: { user?: { username?: string } } };
+        const username = tiktokProfile.data?.user?.username;
+        if (username) {
+          const { users } = await import("@/lib/db/schema-pg");
+          const { eq } = await import("drizzle-orm");
+          await db.update(users).set({ tiktokUsername: username }).where(eq(users.id, user.id));
+          logger.info("Stored TikTok username", { component: "auth", userId: user.id, username });
+        }
+      }
+      
       return true;
     },
     async session({ session, user }) {
       logger.debug("Auth session callback", { component: "auth", userId: user?.id });
       session.user.id = user.id;
+      // Include tiktokUsername in session
+      session.user.tiktokUsername = (user as { tiktokUsername?: string }).tiktokUsername;
       return session;
     },
   },

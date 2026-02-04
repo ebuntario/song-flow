@@ -8,6 +8,7 @@ export const users = pgTable("user", {
   email: text("email"),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
+  tiktokUsername: text("tiktok_username"),
 });
 
 export const accounts = pgTable("account", {

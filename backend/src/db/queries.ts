@@ -26,6 +26,19 @@ export async function getUserFromSessionToken(sessionToken: string): Promise<Use
 }
 
 /**
+ * Get user's TikTok username from their profile
+ */
+export async function getUserTiktokUsername(userId: string): Promise<string | null> {
+  const [user] = await db
+    .select({ tiktokUsername: users.tiktokUsername })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  return user?.tiktokUsername ?? null;
+}
+
+/**
  * Get active session for a user
  */
 export async function getActiveSessionForUser(userId: string): Promise<LiveSession | null> {

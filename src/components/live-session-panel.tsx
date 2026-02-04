@@ -1,14 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { useBackendWS, type QueueItem } from "@/hooks/use-backend-ws";
 import { Loader2, Music, Trash2, Wifi, WifiOff } from "lucide-react";
 
 export function LiveSessionPanel() {
-  const [tiktokUsername, setTiktokUsername] = useState("");
   const {
     session,
     queue,
@@ -19,11 +16,6 @@ export function LiveSessionPanel() {
     endSession,
     removeFromQueue,
   } = useBackendWS();
-
-  const handleStartSession = () => {
-    if (!tiktokUsername.trim()) return;
-    startSession(tiktokUsername.trim());
-  };
 
   return (
     <div className="space-y-4">
@@ -76,29 +68,21 @@ export function LiveSessionPanel() {
           </Button>
         </div>
       ) : (
-        <div className="space-y-3">
-          <Input
-            placeholder="Your TikTok username (without @)"
-            value={tiktokUsername}
-            onChange={(e) => setTiktokUsername(e.target.value)}
-            className="h-12"
-          />
-          <Button
-            size="lg"
-            className="w-full h-14 text-lg bg-green-600 hover:bg-green-700"
-            onClick={handleStartSession}
-            disabled={isConnecting || !isConnected || !tiktokUsername.trim()}
-          >
-            {isConnecting ? (
-              <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Connecting...
-              </>
-            ) : (
-              "Start Session"
-            )}
-          </Button>
-        </div>
+        <Button
+          size="lg"
+          className="w-full h-14 text-lg bg-green-600 hover:bg-green-700"
+          onClick={startSession}
+          disabled={isConnecting || !isConnected}
+        >
+          {isConnecting ? (
+            <>
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              Connecting...
+            </>
+          ) : (
+            "Start Session"
+          )}
+        </Button>
       )}
 
       {/* Queue */}

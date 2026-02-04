@@ -9,6 +9,7 @@ export const users = sqliteTable("user", {
   email: text("email"),
   emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
   image: text("image"),
+  tiktokUsername: text("tiktok_username"),
 });
 
 export const accounts = sqliteTable("account", {
