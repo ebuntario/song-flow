@@ -13,6 +13,34 @@ export interface QueueItem {
   requestedAt: string;
 }
 
+export interface SongRequest {
+  id: string;
+  viewerUsername: string;
+  rawComment: string;
+  parsedQuery: string;
+  searchStatus: "pending" | "matched" | "not_found" | "error" | "rate_limited";
+  spotifyTrackId: string | null;
+  trackName: string | null;
+  trackArtist: string | null;
+  albumName: string | null;
+  albumImageUrl: string | null;
+  durationMs: number | null;
+  spotifyUri: string | null;
+  playStatus: "pending" | "confirmed" | "not_played" | null;
+  requestedAt: string;
+  matchedAt: string | null;
+}
+
+export interface GiftEvent {
+  id: string;
+  viewerUsername: string;
+  giftId: number;
+  giftName: string | null;
+  diamondCount: number | null;
+  repeatCount: number;
+  receivedAt: string;
+}
+
 export interface LiveSession {
   id: string;
   tiktokUsername: string;
@@ -24,17 +52,25 @@ interface WSMessage {
   type: string;
   session?: LiveSession;
   queue?: QueueItem[];
+  requests?: SongRequest[];
+  gifts?: GiftEvent[];
   item?: QueueItem;
+  request?: SongRequest;
+  gift?: GiftEvent;
   roomId?: string;
   reason?: string;
+  message?: string;
 }
 
 interface UseBackendWSReturn {
   session: LiveSession | null;
   queue: QueueItem[];
+  requests: SongRequest[];
+  gifts: GiftEvent[];
   isConnected: boolean;
   isConnecting: boolean;
   error: string | null;
+  spotifyError: string | null;
   startSession: () => Promise<void>;
   endSession: () => Promise<void>;
   removeFromQueue: (itemId: string) => Promise<void>;
@@ -59,9 +95,12 @@ export function useBackendWS(): UseBackendWSReturn {
   const wsRef = useRef<WebSocket | null>(null);
   const [session, setSession] = useState<LiveSession | null>(null);
   const [queue, setQueue] = useState<QueueItem[]>([]);
+  const [requests, setRequests] = useState<SongRequest[]>([]);
+  const [gifts, setGifts] = useState<GiftEvent[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [spotifyError, setSpotifyError] = useState<string | null>(null);
 
   // Connect to WebSocket
   useEffect(() => {
@@ -99,6 +138,8 @@ export function useBackendWS(): UseBackendWSReturn {
           case "init":
             if (data.session) setSession(data.session);
             if (data.queue) setQueue(data.queue);
+            if (data.requests) setRequests(data.requests);
+            if (data.gifts) setGifts(data.gifts);
             break;
           case "session:connected":
             // Session started
@@ -106,6 +147,25 @@ export function useBackendWS(): UseBackendWSReturn {
           case "session:ended":
             setSession(null);
             setQueue([]);
+            setRequests([]);
+            setGifts([]);
+            break;
+          case "request:new":
+            if (data.request) {
+              setRequests((prev) => [data.request!, ...prev]);
+            }
+            break;
+          case "request:update":
+            if (data.request) {
+              setRequests((prev) =>
+                prev.map((r) => (r.id === data.request!.id ? data.request! : r))
+              );
+            }
+            break;
+          case "gift:new":
+            if (data.gift) {
+              setGifts((prev) => [data.gift!, ...prev]);
+            }
             break;
           case "queue:add":
             if (data.item) {
@@ -114,6 +174,9 @@ export function useBackendWS(): UseBackendWSReturn {
             break;
           case "queue:update":
             if (data.queue) setQueue(data.queue);
+            break;
+          case "session:spotify_error":
+            setSpotifyError(data.message ?? "Spotify error");
             break;
           case "server:shutdown":
             setError("Server is restarting...");
@@ -133,6 +196,7 @@ export function useBackendWS(): UseBackendWSReturn {
   const startSession = useCallback(async () => {
     setIsConnecting(true);
     setError(null);
+    setSpotifyError(null);
 
     try {
       const res = await fetch(`${BACKEND_URL}/session`, {
@@ -166,6 +230,9 @@ export function useBackendWS(): UseBackendWSReturn {
       if (res.ok) {
         setSession(null);
         setQueue([]);
+        setRequests([]);
+        setGifts([]);
+        setSpotifyError(null);
       }
     } catch {
       setError("Failed to end session");
@@ -189,11 +256,15 @@ export function useBackendWS(): UseBackendWSReturn {
   return {
     session,
     queue,
+    requests,
+    gifts,
     isConnected,
     isConnecting,
     error,
+    spotifyError,
     startSession,
     endSession,
     removeFromQueue,
   };
 }
+
