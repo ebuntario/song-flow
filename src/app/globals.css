@@ -8,8 +8,24 @@
   }
 }
 
+/* ─── Font families ─── */
+@layer base {
+  :root {
+    --font-display: var(--font-outfit), system-ui, sans-serif;
+    --font-body: var(--font-dm-sans), system-ui, sans-serif;
+    --font-mono: var(--font-jetbrains-mono), monospace;
+  }
 
+  body {
+    font-family: var(--font-body);
+  }
 
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+  }
+}
+
+/* ─── Design tokens ─── */
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -38,12 +54,13 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
   .dark {
-    --background: 0 0% 3.9%;
+    --background: 0 0% 4%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
+    --card: 0 0% 6%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
+    --popover: 0 0% 6%;
     --popover-foreground: 0 0% 98%;
     --primary: 0 0% 98%;
     --primary-foreground: 0 0% 9%;
@@ -63,16 +80,122 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
+    /* SongFlow brand tokens */
+    --spotify-green: 141 73% 42%;
+    --tiktok-pink: 340 82% 59%;
+    --tiktok-cyan: 180 100% 50%;
+    --status-pending: 45 93% 58%;
+    --status-error: 0 72% 51%;
   }
 }
 
-
-
+/* ─── Base resets ─── */
 @layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
+    position: relative;
   }
+
+  /* Grain overlay — subtle texture depth */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 256px 256px;
+  }
+
+  /* Vignette — subtle edge darkening */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse at center,
+      transparent 60%,
+      rgba(0, 0, 0, 0.4) 100%
+    );
+  }
+}
+
+/* ─── Spring easings (generated via Motion MCP) ─── */
+:root {
+  /* Snappy spring: 0.15 bounce, 0.3s perceptual */
+  --spring-snappy: linear(0, 0.3566, 0.7963, 1.0045, 1.0459, 1.0287, 1.0088, 0.9996, 1, 0.9987, 0.9996, 1);
+  /* Normal spring: 0.2 bounce, 0.4s perceptual */
+  --spring-normal: linear(0, 0.2459, 0.6526, 0.9468, 1.0764, 1.0915, 1.0585, 1.0219, 0.9993, 0.9914, 0.9921, 0.9957, 0.9988, 1.0004, 1);
+}
+
+/* ─── Keyframe animations ─── */
+
+/* Waveform pulse bar */
+@keyframes pulse-wave {
+  0%, 100% { opacity: 0.3; transform: scaleX(0.92); }
+  50% { opacity: 1; transform: scaleX(1); }
+}
+
+/* Request row slide-in */
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Status dot glow */
+@keyframes glow-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+/* Gift row flash */
+@keyframes gift-flash {
+  0% { background-color: hsl(340 82% 59% / 0.2); }
+  100% { background-color: transparent; }
+}
+
+/* Staggered fade-in for report cards */
+@keyframes stagger-fade {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Session card entrance */
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Animation utility classes (spring-eased) ─── */
+.animate-slide-in-left {
+  animation: slide-in-left 350ms var(--spring-snappy) forwards;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 200ms ease-out;
+}
+
+.animate-gift-flash {
+  animation: gift-flash 2s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slide-up 450ms var(--spring-normal) forwards;
+}
+
+.animate-stagger-fade {
+  animation: stagger-fade 450ms var(--spring-normal) forwards;
+}
+
+/* Mono font utility */
+.font-mono-display {
+  font-family: var(--font-mono);
 }
