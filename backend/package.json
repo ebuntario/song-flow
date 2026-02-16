@@ -5,6 +5,8 @@
     "dev": "bun run --watch src/index.ts",
     "start": "bun run src/index.ts",
     "db:generate": "drizzle-kit generate",
+    "test": "bun test --preload ./src/__tests__/preload.ts",
+    "test:watch": "bun test --watch --preload ./src/__tests__/preload.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio"
   },

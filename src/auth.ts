@@ -2,7 +2,9 @@ import NextAuth from "next-auth";
 import TikTok from "next-auth/providers/tiktok";
 import Spotify from "next-auth/providers/spotify";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { users } from "@/lib/db/schema-pg";
 import { logger } from "@/lib/logger";
 
 // Debug: Log environment variables (redacted for security)
@@ -30,15 +32,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: DrizzleAdapter(db),
   providers: [
     TikTok({
-      // Default scope is user.info.basic which does NOT include username
-      // user.info.profile grants access to the username field
+      // user.info.basic: open_id, avatar_url, display_name (included in Login Kit)
+      // user.info.profile: username, bio_description, is_verified, etc. (added in TikTok Dev Portal)
       authorization: {
         params: {
-          scope: "user.info.profile",
+          scope: "user.info.basic,user.info.profile",
         },
       },
-      // Default userinfo only requests open_id,avatar_url,display_name
-      // We need to also request username
+      // Request username (requires user.info.profile) alongside the basic fields
       userinfo: "https://open.tiktokapis.com/v2/user/info/?fields=open_id,avatar_url,display_name,username",
     }),
     Spotify({
@@ -78,19 +79,32 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // Store TikTok username + refresh avatar URL from profile on every login
       // TikTok CDN avatar URLs are signed & expire, so we must refresh each time
       if (account?.provider === "tiktok" && profile && user?.id) {
-        const tiktokProfile = profile as { data?: { user?: { username?: string; avatar_url?: string } } };
-        const username = tiktokProfile.data?.user?.username;
-        const avatarUrl = tiktokProfile.data?.user?.avatar_url ?? user.image;
-        
-        const updateData: Record<string, string> = {};
+        const tiktokProfile = profile as {
+          data?: { user?: { username?: string; display_name?: string; avatar_url?: string } }
+        };
+        const tiktokUser = tiktokProfile.data?.user;
+        // Prefer @username; fall back to display_name if user.info.profile isn't returning it yet
+        const username = tiktokUser?.username || tiktokUser?.display_name;
+        // Only write avatar_url if the API actually returned one — never fall back to the
+        // previous (possibly expired) user.image value
+        const avatarUrl = tiktokUser?.avatar_url;
+
+        const updateData: Partial<typeof users.$inferInsert> = {};
         if (username) updateData.tiktokUsername = username;
         if (avatarUrl) updateData.image = avatarUrl;
-        
+
         if (Object.keys(updateData).length > 0) {
-          const { users } = await import("@/lib/db/schema-pg");
-          const { eq } = await import("drizzle-orm");
-          await db.update(users).set(updateData).where(eq(users.id, user.id));
-          logger.info("Updated TikTok profile data", { component: "auth", userId: user.id, username, hasAvatar: !!avatarUrl });
+          try {
+            await db.update(users).set(updateData).where(eq(users.id, user.id));
+            logger.info("Updated TikTok profile data", {
+              component: "auth", userId: user.id, username, hasAvatar: !!avatarUrl,
+            });
+          } catch (err) {
+            // Log but don't block sign-in — stale profile data is better than no login
+            logger.error("Failed to update TikTok profile data", {
+              component: "auth", userId: user.id, error: err,
+            });
+          }
         }
       }
       
@@ -99,8 +113,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, user }) {
       logger.debug("Auth session callback", { component: "auth", userId: user?.id });
       session.user.id = user.id;
-      // Include tiktokUsername in session
-      session.user.tiktokUsername = (user as { tiktokUsername?: string }).tiktokUsername;
+      // User type is augmented in types/next-auth.d.ts — safe to access directly
+      session.user.tiktokUsername = user.tiktokUsername;
       return session;
     },
   },
