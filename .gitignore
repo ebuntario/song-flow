@@ -42,3 +42,6 @@ next-env.d.ts
 
 # database
 *.db
+# test files
+**/__tests__/
+testsprite_tests/
