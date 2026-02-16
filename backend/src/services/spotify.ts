@@ -159,10 +159,80 @@ export async function addToSpotifyQueue(
 }
 
 // Types
-interface SpotifyTrack {
+export interface SpotifyTrack {
   id: string;
   name: string;
   uri: string;
   artists: { name: string }[];
   album: { name: string; images: { url: string }[] };
+  duration_ms: number;
 }
+
+// ============ Recently Played (for poller) ============
+
+interface RecentlyPlayedItem {
+  track: SpotifyTrack;
+  played_at: string;
+}
+
+interface RecentlyPlayedResponse {
+  items: RecentlyPlayedItem[];
+  cursors?: { after: string; before: string };
+}
+
+/**
+ * Fetch recently played tracks from Spotify.
+ * Used by the poller to confirm play status.
+ * Returns null on error (caller should handle gracefully).
+ */
+export async function getRecentlyPlayed(
+  accessToken: string,
+  after?: number
+): Promise<RecentlyPlayedResponse | null> {
+  try {
+    const params = new URLSearchParams({ limit: "50" });
+    if (after) params.set("after", String(after));
+
+    const response = await fetch(
+      `${SPOTIFY_API_BASE}/me/player/recently-played?${params}`,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
+
+    if (response.status === 403) {
+      logger.error("Spotify 403 — likely no Premium subscription");
+      return null;
+    }
+
+    if (!response.ok) {
+      logger.error("Spotify recently-played failed", { status: response.status });
+      return null;
+    }
+
+    return (await response.json()) as RecentlyPlayedResponse;
+  } catch (err) {
+    logger.error("Error fetching recently played", { error: String(err) });
+    return null;
+  }
+}
+
+/**
+ * Check if user has Spotify Premium (required for recently-played API).
+ * Returns true if Premium, false otherwise.
+ */
+export async function checkSpotifyPremium(accessToken: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${SPOTIFY_API_BASE}/me`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!response.ok) return false;
+
+    const data = (await response.json()) as { product?: string };
+    return data.product === "premium";
+  } catch {
+    return false;
+  }
+}
+
