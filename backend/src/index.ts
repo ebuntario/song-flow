@@ -2,15 +2,17 @@ import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { TikTokService } from "./services/tiktok";
 import { getSpotifyToken } from "./services/spotify";
-import { validateRequest } from "./services/auth";
+import { authDerive } from "./lib/auth-middleware";
 import {
-  getActiveSessionForUser,
   getAllActiveSessions,
   createLiveSession,
   endLiveSession,
   getQueueForSession,
   skipQueueItem,
   getUserTiktokUsername,
+  getRequestsForSession,
+  getGiftEventsForSession,
+  getSessionReport,
 } from "./db/queries";
 import { logger } from "./lib/logger";
 
@@ -21,7 +23,7 @@ const wsClients = new Map<string, Set<{ send: (data: string) => void }>>();
 function emitToUser(userId: string, event: unknown) {
   const clients = wsClients.get(userId);
   if (!clients) return;
-  
+
   const message = JSON.stringify(event);
   for (const client of clients) {
     client.send(message);
@@ -65,6 +67,7 @@ const app = new Elysia()
     },
     credentials: true,
   }))
+  .use(authDerive)
 
   // Health endpoint
   .get("/health", () => ({
@@ -73,18 +76,14 @@ const app = new Elysia()
   }))
 
   // Start session
-  .post("/session", async ({ cookie, set }) => {
-    const cookieHeader = Object.entries(cookie)
-      .map(([name, c]) => `${name}=${c.value}`)
-      .join("; ");
-
-    const user = await validateRequest(cookieHeader);
+  .post("/session", async ({ user, set }) => {
     if (!user) {
       set.status = 401;
       return { error: "Unauthorized" };
     }
 
-    // Check for existing session
+    // Check for existing session (re-fetch for freshness since authDerive may have stale data)
+    const { getActiveSessionForUser } = await import("./db/queries");
     const existing = await getActiveSessionForUser(user.id);
     if (existing) {
       set.status = 409;
@@ -109,13 +108,12 @@ const app = new Elysia()
     // Create session
     const session = await createLiveSession(user.id, tiktokUsername);
 
-    // Start TikTok listener
+    // Start TikTok listener (H1: no spotifyToken param)
     try {
       await tiktokService.startListening(
         session.id,
         session.tiktokUsername,
-        user.id,
-        spotifyToken
+        user.id
       );
     } catch {
       // Failed to connect - end session
@@ -128,57 +126,40 @@ const app = new Elysia()
   })
 
   // Stop session
-  .delete("/session", async ({ cookie, set }) => {
-    const cookieHeader = Object.entries(cookie)
-      .map(([name, c]) => `${name}=${c.value}`)
-      .join("; ");
-
-    const user = await validateRequest(cookieHeader);
+  .delete("/session", async ({ user, activeSession, set }) => {
     if (!user) {
       set.status = 401;
       return { error: "Unauthorized" };
     }
 
-    const session = await getActiveSessionForUser(user.id);
-    if (!session) {
+    if (!activeSession) {
       set.status = 404;
       return { error: "No active session" };
     }
 
-    await tiktokService.stopListening(session.id);
-    await endLiveSession(session.id);
+    // Sequential shutdown: poller → finalize → flush → disconnect
+    await tiktokService.stopListening(activeSession.id);
+    await endLiveSession(activeSession.id);
 
     return { success: true };
   })
 
   // Get queue
-  .get("/queue", async ({ cookie, set }) => {
-    const cookieHeader = Object.entries(cookie)
-      .map(([name, c]) => `${name}=${c.value}`)
-      .join("; ");
-
-    const user = await validateRequest(cookieHeader);
+  .get("/queue", async ({ user, activeSession }) => {
     if (!user) {
-      set.status = 401;
-      return { error: "Unauthorized" };
-    }
-
-    const session = await getActiveSessionForUser(user.id);
-    if (!session) {
       return { queue: [], hasSession: false };
     }
 
-    const queue = await getQueueForSession(session.id);
-    return { queue, hasSession: true, sessionId: session.id };
+    if (!activeSession) {
+      return { queue: [], hasSession: false };
+    }
+
+    const queue = await getQueueForSession(activeSession.id);
+    return { queue, hasSession: true, sessionId: activeSession.id };
   })
 
   // Remove from queue
-  .delete("/queue/:id", async ({ cookie, params, set }) => {
-    const cookieHeader = Object.entries(cookie)
-      .map(([name, c]) => `${name}=${c.value}`)
-      .join("; ");
-
-    const user = await validateRequest(cookieHeader);
+  .delete("/queue/:id", async ({ user, params, set }) => {
     if (!user) {
       set.status = 401;
       return { error: "Unauthorized" };
@@ -188,16 +169,64 @@ const app = new Elysia()
     return { success: true };
   })
 
+  // Get song requests (paginated)
+  .get("/requests", async ({ user, activeSession, query }) => {
+    if (!user) {
+      return { requests: [], hasSession: false };
+    }
+
+    if (!activeSession) {
+      return { requests: [], hasSession: false };
+    }
+
+    const before = query.before ? new Date(query.before as string) : undefined;
+    const limit = query.limit ? Number(query.limit) : 50;
+    const requests = await getRequestsForSession(activeSession.id, before, limit);
+    return { requests, hasSession: true, sessionId: activeSession.id };
+  })
+
+  // Get gift events
+  .get("/gifts", async ({ user, activeSession }) => {
+    if (!user) {
+      return { gifts: [], hasSession: false };
+    }
+
+    if (!activeSession) {
+      return { gifts: [], hasSession: false };
+    }
+
+    const gifts = await getGiftEventsForSession(activeSession.id);
+    return { gifts, hasSession: true, sessionId: activeSession.id };
+  })
+
+  // Get session report
+  .get("/report", async ({ user, activeSession, set }) => {
+    if (!user) {
+      set.status = 401;
+      return { error: "Unauthorized" };
+    }
+
+    if (!activeSession) {
+      set.status = 404;
+      return { error: "No active session" };
+    }
+
+    const report = await getSessionReport(activeSession.id);
+    return { report, sessionId: activeSession.id };
+  })
+
   // WebSocket for real-time updates
   .ws("/ws/dashboard", {
     async open(ws) {
       // Parse cookie from upgrade headers - type varies by runtime
       const headers = (ws.data as { headers?: { get?: (name: string) => string; cookie?: string } })?.headers;
-      const cookieHeader = typeof headers?.get === "function" 
-        ? headers.get("cookie") 
+      const cookieHeader = typeof headers?.get === "function"
+        ? headers.get("cookie")
         : (headers?.cookie ?? "");
+
+      const { validateRequest } = await import("./services/auth");
       const user = await validateRequest(cookieHeader ?? "");
-      
+
       if (!user) {
         ws.close();
         return;
@@ -210,10 +239,13 @@ const app = new Elysia()
       wsClients.get(user.id)!.add(ws);
 
       // Send current state
+      const { getActiveSessionForUser } = await import("./db/queries");
       const session = await getActiveSessionForUser(user.id);
       if (session) {
         const queue = await getQueueForSession(session.id);
-        ws.send(JSON.stringify({ type: "init", session, queue }));
+        const requests = await getRequestsForSession(session.id, undefined, 50);
+        const gifts = await getGiftEventsForSession(session.id);
+        ws.send(JSON.stringify({ type: "init", session, queue, requests, gifts }));
       }
     },
     async close(ws) {
@@ -246,18 +278,11 @@ async function recoverSessions() {
   for (const session of activeSessions) {
     const sessionLogger = logger.child({ sessionId: session.id, username: session.tiktokUsername });
     try {
-      const spotifyToken = await getSpotifyToken(session.userId);
-      if (!spotifyToken) {
-        sessionLogger.warn("No Spotify token found, ending session");
-        await endLiveSession(session.id);
-        continue;
-      }
-
+      // H1: no spotifyToken in startListening — token is lazy-fetched
       await tiktokService.startListening(
         session.id,
         session.tiktokUsername,
-        session.userId,
-        spotifyToken
+        session.userId
       );
       sessionLogger.info("Session recovered successfully");
     } catch {
@@ -281,8 +306,8 @@ process.on("SIGTERM", async () => {
     }
   }
 
-  // Disconnect all TikTok connections
-  tiktokService.disconnectAll();
+  // Disconnect all TikTok connections (now async for poller finalization)
+  await tiktokService.disconnectAll();
 
   // Close server
   app.stop();
@@ -290,3 +315,4 @@ process.on("SIGTERM", async () => {
 });
 
 export type App = typeof app;
+
