@@ -64,15 +64,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         hasProfile: !!profile,
       });
       
-      // Store TikTok username from profile
+      // Store TikTok username + refresh avatar URL from profile on every login
+      // TikTok CDN avatar URLs are signed & expire, so we must refresh each time
       if (account?.provider === "tiktok" && profile && user?.id) {
-        const tiktokProfile = profile as { data?: { user?: { username?: string } } };
+        const tiktokProfile = profile as { data?: { user?: { username?: string; avatar_url?: string } } };
         const username = tiktokProfile.data?.user?.username;
-        if (username) {
+        const avatarUrl = tiktokProfile.data?.user?.avatar_url ?? user.image;
+        
+        const updateData: Record<string, string> = {};
+        if (username) updateData.tiktokUsername = username;
+        if (avatarUrl) updateData.image = avatarUrl;
+        
+        if (Object.keys(updateData).length > 0) {
           const { users } = await import("@/lib/db/schema-pg");
           const { eq } = await import("drizzle-orm");
-          await db.update(users).set({ tiktokUsername: username }).where(eq(users.id, user.id));
-          logger.info("Stored TikTok username", { component: "auth", userId: user.id, username });
+          await db.update(users).set(updateData).where(eq(users.id, user.id));
+          logger.info("Updated TikTok profile data", { component: "auth", userId: user.id, username, hasAvatar: !!avatarUrl });
         }
       }
       
