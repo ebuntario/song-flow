@@ -29,7 +29,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true, // Required for Vercel deployments
   adapter: DrizzleAdapter(db),
   providers: [
-    TikTok, // Primary login
+    TikTok({
+      // Default scope is user.info.basic which does NOT include username
+      // user.info.profile grants access to the username field
+      authorization: {
+        params: {
+          scope: "user.info.profile",
+        },
+      },
+      // Default userinfo only requests open_id,avatar_url,display_name
+      // We need to also request username
+      userinfo: "https://open.tiktokapis.com/v2/user/info/?fields=open_id,avatar_url,display_name,username",
+    }),
     Spotify({
       authorization: {
         url: "https://accounts.spotify.com/authorize",
